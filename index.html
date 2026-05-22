@@ -2150,7 +2150,8 @@ if (parsed.rewards) state.rewards = parsed.rewards;
             celebratedToday = false; 
             const notesInput = document.getElementById('daily-notes-input');
 
-            if (!state.quran) state.quran = { currentLesson: 1 };
+            if (!state.quran) state.quran = { currentLesson: 1, startLesson: 1, notes: "" };
+            if (!state.quran.startLesson) state.quran.startLesson = 1;
 
             if (state.history[dateString]) {
                 state.tasks = JSON.parse(JSON.stringify(state.history[dateString].tasks));
@@ -2300,7 +2301,8 @@ if(!state.history[dateString].athkar) {
 
             // حساب نسبة الإنجاز
             const completedLessons = Math.max(0, state.quran.currentLesson - 1);
-            document.getElementById('quran-overall-progress').innerText = `إنجاز الخطة: ${completedLessons} / 598`;
+            const actualCompletedInApp = Math.max(0, state.quran.currentLesson - (state.quran.startLesson || 1));
+            document.getElementById('quran-overall-progress').innerText = `أنجزت بالتطبيق: ${actualCompletedInApp} درس`;
             document.getElementById('quran-progress-bar').style.width = `${(completedLessons / 598) * 100}%`;
             
             // حساب تاريخ الختم المتوقع (حساب احترافي)
@@ -2330,6 +2332,9 @@ if(!state.history[dateString].athkar) {
     
     if (qTasks.hifz && qTasks.rabt && qTasks.muraja) {
         if (state.quran.currentLesson <= qTasks.lessonId) {
+            if (qTasks.lessonId > state.quran.currentLesson && state.quran.currentLesson === (state.quran.startLesson || 1)) {
+                state.quran.startLesson = qTasks.lessonId;
+            }
             state.quran.currentLesson = Math.min(598, qTasks.lessonId + 1);
             showToast("إنجاز قرآني رائع!", "أتممت مهام القرآن لليوم بنجاح، وتم نقلك للدرس التالي للغد.");
         }
@@ -2385,11 +2390,10 @@ if(!state.history[dateString].athkar) {
                 return;
             }
             
-            if(confirm(`هل أنت متأكد من تحديد مستواك عند الدرس ${val}؟ سيتم اعتبار جميع الدروس السابقة (مكتملة) في الفهرس الشامل.`)) {
-                // تحديث المؤشر العام للختمة
+            if(confirm(`هل أنت متأكد من بدء مسارك من الدرس ${val}؟\nسيتم وضع جميع الدروس السابقة في حالة (مستوى سابق) ولن تُحسب كإنجاز وهمي داخل التطبيق.`)) {
+                state.quran.startLesson = val;
                 state.quran.currentLesson = val;
                 
-                // تحديث درس اليوم وإزالة علامات الصح
                 const todayQ = state.history[state.currentDate].quranTasks;
                 todayQ.lessonId = val;
                 todayQ.hifz = false;
@@ -2400,7 +2404,7 @@ if(!state.history[dateString].athkar) {
                 saveState();
                 renderQuranTab();
                 updateAllProgress();
-                showToast("تم التحديث", `تم تعيين الختمة بنجاح إلى الدرس ${val}.`);
+                showToast("تم التحديث", `تم تعيين البداية بنجاح من الدرس ${val}.`);
             }
         }
 
@@ -2408,6 +2412,7 @@ if(!state.history[dateString].athkar) {
         function resetQuranProgressTotally() {
             if(confirm("تحذير ⚠️\nهل أنت متأكد من تصفير ختمة القرآن بالكامل والعودة للدرس الأول؟ لن يمكنك التراجع عن هذا الإجراء!")) {
                 state.quran.currentLesson = 1;
+                state.quran.startLesson = 1; 
                 
                 const todayQ = state.history[state.currentDate].quranTasks;
                 todayQ.lessonId = 1;
@@ -2467,12 +2472,23 @@ if(!state.history[dateString].athkar) {
             
             let html = '';
             const cGlobal = state.quran.currentLesson;
+            const sGlobal = state.quran.startLesson || 1; 
             
             quranLessons.forEach(l => {
-                let status = l.id < cGlobal ? '<span class="text-emerald-500 font-bold"><i class="fa-solid fa-check-circle"></i> مكتمل</span>' : 
-                            (l.id === cGlobal ? '<span class="text-blue-500 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> الحالي</span>' : 
-                            '<span class="text-slate-400">قادم</span>');
-                let rowClass = l.id === cGlobal ? 'bg-blue-50/50 dark:bg-blue-900/10' : '';
+                let status = '';
+                let rowClass = '';
+
+                if (l.id < sGlobal) {
+                    status = '<span class="text-slate-400 font-bold"><i class="fa-solid fa-forward-step"></i> مستوى سابق</span>';
+                } else if (l.id >= sGlobal && l.id < cGlobal) {
+                    status = '<span class="text-emerald-500 font-bold"><i class="fa-solid fa-check-circle"></i> مكتمل</span>';
+                } else if (l.id === cGlobal) {
+                    status = '<span class="text-blue-500 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> الحالي</span>';
+                    rowClass = 'bg-blue-50/50 dark:bg-blue-900/10';
+                } else {
+                    status = '<span class="text-slate-400">قادم</span>';
+                }
+
                 html += `
                     <tr class="${rowClass} hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                         <td class="p-3 font-bold text-slate-900 dark:text-slate-100">${l.id}</td>
