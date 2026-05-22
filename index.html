@@ -657,6 +657,26 @@
                         </button>
                     </div>
                 </div>
+                <!-- صندوق إعدادات الختمة المتقدمة (تحديث يدوي وتصفير) -->
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
+                    <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-sliders text-emerald-500"></i> إعدادات الختمة المتقدمة
+                    </h3>
+                    <p class="text-[10px] sm:text-xs text-slate-500 mb-4">حدد رقم الدرس الذي وصلت إليه ليتم اعتبار كل ما يسبقه مكتملاً، أو قم بتصفير الختمة للبدء من جديد.</p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-3 items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-4">
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <input type="number" id="manual-quran-level-input" min="1" max="598" placeholder="رقم الدرس..." class="w-24 text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-emerald-500">
+                            <button onclick="setQuranLevelManual()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center gap-1 shrink-0">
+                                <i class="fa-solid fa-check"></i> اعتماد المستوى
+                            </button>
+                        </div>
+                        
+                        <button onclick="resetQuranProgressTotally()" class="w-full sm:w-auto bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-900/20 dark:hover:bg-rose-900/40 dark:text-rose-400 px-4 py-2 rounded-lg text-xs font-bold transition-colors border border-rose-200 dark:border-rose-800/50 flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-triangle-exclamation"></i> تصفير الختمة
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Table of all lessons -->
                 <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm flex flex-col">
@@ -2072,6 +2092,8 @@
                     if (parsed.retroTables) state.retroTables = parsed.retroTables;
                     if (parsed.savedNotes) state.savedNotes = parsed.savedNotes;
                     if (parsed.examScores) state.examScores = parsed.examScores;
+                    if (parsed.gamification) state.gamification = parsed.gamification;
+if (parsed.rewards) state.rewards = parsed.rewards;
                 } catch (e) { console.error("Error parsing saved state", e); }
             }
             
@@ -2150,14 +2172,17 @@ if(!state.history[dateString].athkar) {
                 state.studyPath = [];
                 if (notesInput) notesInput.value = "";
                 state.history[dateString] = {
-                    tasks: state.tasks,
-                    studyPath: state.studyPath,
-                    todoList: state.todoList,
-                    progressPercent: 0,
-                    completedTasksCount: 0,
-                    notes: "",
-                    quranTasks: { lessonId: state.quran.currentLesson, hifz: false, rabt: false, muraja: false }
-                };
+                tasks: state.tasks,
+                studyPath: state.studyPath,
+                todoList: state.todoList,
+                progressPercent: 0,
+                completedTasksCount: 0,
+                notes: "",
+                quranTasks: { lessonId: state.quran.currentLesson, hifz: false, rabt: false, muraja: false },
+                athkar: { morning: false, evening: false, sleep: false, tasbeeh: { subhan: 0, hamd: 0, akbar: 0, istighfar: 0 } },
+                tilawaToday: 0,
+                coursesToday: 0
+            };
             }
 
             const dateObj = new Date(dateString);
@@ -2320,7 +2345,6 @@ if(!state.history[dateString].athkar) {
             if (todayQ.lessonId < 598) {
                 todayQ.lessonId++;
                 todayQ.hifz = false; todayQ.rabt = false; todayQ.muraja = false;
-                if(state.quran.currentLesson < todayQ.lessonId) state.quran.currentLesson = todayQ.lessonId;
                 saveState();
                 renderQuranTab();
                 updateAllProgress();
@@ -2344,10 +2368,53 @@ if(!state.history[dateString].athkar) {
                 const todayQ = state.history[state.currentDate].quranTasks;
                 todayQ.lessonId = val;
                 todayQ.hifz = false; todayQ.rabt = false; todayQ.muraja = false;
-                if(state.quran.currentLesson < val) state.quran.currentLesson = val;
                 saveState();
                 renderQuranTab();
                 updateAllProgress();
+            }
+        }
+        // دالة لاعتماد المستوى الكلي يدوياً
+        function setQuranLevelManual() {
+            const val = parseInt(document.getElementById('manual-quran-level-input').value);
+            if (isNaN(val) || val < 1 || val > 598) {
+                showToast("تنبيه", "يرجى إدخال رقم درس صحيح بين 1 و 598.");
+                return;
+            }
+            
+            if(confirm(`هل أنت متأكد من تحديد مستواك عند الدرس ${val}؟ سيتم اعتبار جميع الدروس السابقة (مكتملة) في الفهرس الشامل.`)) {
+                // تحديث المؤشر العام للختمة
+                state.quran.currentLesson = val;
+                
+                // تحديث درس اليوم وإزالة علامات الصح
+                const todayQ = state.history[state.currentDate].quranTasks;
+                todayQ.lessonId = val;
+                todayQ.hifz = false;
+                todayQ.rabt = false;
+                todayQ.muraja = false;
+                
+                document.getElementById('manual-quran-level-input').value = '';
+                saveState();
+                renderQuranTab();
+                updateAllProgress();
+                showToast("تم التحديث", `تم تعيين الختمة بنجاح إلى الدرس ${val}.`);
+            }
+        }
+
+        // دالة لتصفير الختمة بالكامل
+        function resetQuranProgressTotally() {
+            if(confirm("تحذير ⚠️\nهل أنت متأكد من تصفير ختمة القرآن بالكامل والعودة للدرس الأول؟ لن يمكنك التراجع عن هذا الإجراء!")) {
+                state.quran.currentLesson = 1;
+                
+                const todayQ = state.history[state.currentDate].quranTasks;
+                todayQ.lessonId = 1;
+                todayQ.hifz = false;
+                todayQ.rabt = false;
+                todayQ.muraja = false;
+                
+                saveState();
+                renderQuranTab();
+                updateAllProgress();
+                showToast("تم التصفير", "تم إعادة الختمة إلى الدرس الأول بنجاح.");
             }
         }
 
@@ -2475,10 +2542,12 @@ if(!state.history[dateString].athkar) {
         function handleAddTaskKey(event, period) { if (event.key === 'Enter') addNewCustomTask(period); }
 
         function deleteTask(period, taskId) {
-            state.tasks[period] = (state.tasks[period] || []).filter(t => t.id !== taskId);
-            saveState();
-            renderTaskList(period);
-            updateAllProgress();
+            const list = state.tasks[period] || [];
+            const task = list.find(t => t.id === taskId);
+            if (task && task.completed) updateGamificationRankSilently(-10); // خصم النقاط إذا كانت مكتملة
+            
+            state.tasks[period] = list.filter(t => t.id !== taskId);
+            saveState(); renderTaskList(period); updateAllProgress();
             showToast("تم الحذف", "تمت إزالة المهمة بنجاح.");
         }
 
@@ -2631,6 +2700,9 @@ if(!state.history[dateString].athkar) {
         function deleteStudyTask(blockId, taskId) {
             const block = state.studyPath.find(b => b.id === blockId);
             if (block) {
+                const task = block.tasks.find(t => t.id === taskId);
+                if (task && task.completed) updateGamificationRankSilently(-10); // خصم النقاط
+
                 block.tasks = block.tasks.filter(t => t.id !== taskId);
                 saveState(); renderStudyPath(); updateAllProgress();
             }
@@ -2977,9 +3049,15 @@ if(!state.history[dateString].athkar) {
         function deleteTodo(mainId, subId) {
             if (subId) {
                 const mainTask = state.todoList.find(t => t.id === mainId);
-                if (mainTask) mainTask.subtasks = mainTask.subtasks.filter(s => s.id !== subId);
+                if (mainTask) {
+                    const sub = mainTask.subtasks.find(s => s.id === subId);
+                    if (sub && sub.completed) updateGamificationRankSilently(-10);
+                    mainTask.subtasks = mainTask.subtasks.filter(s => s.id !== subId);
+                }
             } else {
                 if(confirm('هل أنت متأكد من حذف هذه المهمة بجميع تفريعاتها؟')) {
+                    const mainTask = state.todoList.find(t => t.id === mainId);
+                    if (mainTask && mainTask.completed && (!mainTask.subtasks || mainTask.subtasks.length === 0)) updateGamificationRankSilently(-10);
                     state.todoList = state.todoList.filter(t => t.id !== mainId);
                 } else return;
             }
@@ -3214,6 +3292,16 @@ if (state.history[state.currentDate]?.athkar) {
                 });
             }
             // ----------------------------------------
+            // ---- دمج المراجعة الذكية (Spaced Repetition) لليوم ----
+            if (state.spacedRepetition && state.spacedRepetition.length > 0) {
+                state.spacedRepetition.forEach(item => {
+                    const hasReviewedToday = item.history && item.history.some(h => h.date === state.currentDate);
+                    if (hasReviewedToday) {
+                        totalTasksCount++;        // إضافة مهمة للعدد الكلي
+                        completedTasksCount++;    // احتسابها كمكتملة
+                    }
+                });
+            }
             // ---- دمج مراجعات الجدول العكسي (التي تمت اليوم) ----
             if (state.retroTimetable && state.retroTimetable.length > 0) {
                 state.retroTimetable.forEach(topic => {
@@ -3488,36 +3576,42 @@ if (state.history[state.currentDate]?.athkar) {
                 container.classList.add('timer-active');
                 playBeep("success");
 
-                state.timer.intervalId = setInterval(() => {
-                    if (state.timer.seconds === 0) {
-                        if (state.timer.minutes === 0) {
-                            clearInterval(state.timer.intervalId);
-                            state.timer.isRunning = false;
-                            btnText.innerText = "ابدأ التركيز";
-                            btnIcon.className = "fa-solid fa-play";
-                            container.classList.remove('timer-active');
-                            
-                            playBeep("alarm");
-                            setTimeout(() => playBeep("alarm"), 700);
-                            setTimeout(() => playBeep("alarm"), 1400);
+                // حساب وقت النهاية الفعلي بناءً على الوقت الحالي + عدد الدقائق والثواني المتبقية
+                const durationInMilliseconds = (state.timer.minutes * 60 + state.timer.seconds) * 1000;
+                state.timer.endTime = Date.now() + durationInMilliseconds;
 
-                            showToast("تم الانتهاء والتركيز!", `رائع! انتهت فترة: ${state.timer.label} بنجاح ساحق.`);
-                            
-                            if ("Notification" in window && Notification.permission === "granted") {
-                                new Notification("انتهت جلسة التركيز! 🎯", {
-                                    body: `أحسنت صنعاً! انتهت جلسة: ${state.timer.label} بنجاح. حان وقت الراحة.`,
-                                    icon: "https://cdn-icons-png.flaticon.com/512/1086/1086933.png"
-                                });
-                            }
-                            state.timer.minutes = state.timer.initialMinutes;
-                            state.timer.seconds = 0;
-                            updateTimerDisplay();
-                            return;
-                        }
-                        state.timer.minutes--;
-                        state.timer.seconds = 59;
-                    } else state.timer.seconds--;
+                state.timer.intervalId = setInterval(() => {
+                    // حساب الثواني المتبقية الفعلية بطرح وقت النهاية من الوقت الحالي للكمبيوتر/الهاتف
+                    const totalSecondsLeft = Math.max(0, Math.round((state.timer.endTime - Date.now()) / 1000));
+
+                    state.timer.minutes = Math.floor(totalSecondsLeft / 60);
+                    state.timer.seconds = totalSecondsLeft % 60;
+
                     updateTimerDisplay();
+
+                    if (totalSecondsLeft === 0) {
+                        clearInterval(state.timer.intervalId);
+                        state.timer.isRunning = false;
+                        btnText.innerText = "ابدأ التركيز";
+                        btnIcon.className = "fa-solid fa-play";
+                        container.classList.remove('timer-active');
+                        
+                        playBeep("alarm");
+                        setTimeout(() => playBeep("alarm"), 700);
+                        setTimeout(() => playBeep("alarm"), 1400);
+
+                        showToast("تم الانتهاء والتركيز!", `رائع! انتهت فترة: ${state.timer.label} بنجاح ساحق.`);
+                        
+                        if ("Notification" in window && Notification.permission === "granted") {
+                            new Notification("انتهت جلسة التركيز! 🎯", {
+                                    body: `أحسنت صنعاً! انتهت جلسة: ${state.timer.label} بنجاح. حان وقت الراحة.`,
+                                icon: "https://cdn-icons-png.flaticon.com/512/1086/1086933.png"
+                            });
+                        }
+                        state.timer.minutes = state.timer.initialMinutes;
+                        state.timer.seconds = 0;
+                        updateTimerDisplay();
+                    }
                 }, 1000);
             }
         }
@@ -3849,6 +3943,7 @@ saveState();
             
             saveState();
             renderTilawaTab();
+            updateAllProgress();
 
             // رسائل تشجيعية
             if (khatmaCompleted) {
@@ -3873,6 +3968,7 @@ saveState();
             input.value = '';
             saveState();
             renderTilawaTab();
+            updateAllProgress();
             showToast("تم التحديث", "تم تعديل رقم الصفحة الحالية بنجاح.");
         }
         // --- END TILAWA LOGIC ---
@@ -4791,6 +4887,23 @@ saveState();
                 }
             }, 3000);
         };
+        // --- تحديث التطبيق تلقائياً إذا دخلنا في يوم جديد ---
+        document.addEventListener("visibilitychange", function() {
+            // يتحقق هذا الكود كلما رجع المستخدم للتطبيق من الخلفية
+            if (document.visibilityState === 'visible') {
+                let checkDate = new Date();
+                const yyyy = checkDate.getFullYear();
+                const mm = String(checkDate.getMonth() + 1).padStart(2, '0');
+                const dd = String(checkDate.getDate()).padStart(2, '0');
+                const realTodayStr = `${yyyy}-${mm}-${dd}`;
+                
+                // إذا كان التاريخ المسجل في الشاشة يختلف عن تاريخ اليوم الفعلي
+                if (state.currentDate && state.currentDate !== realTodayStr) {
+                    // عمل Refresh للصفحة لبدء يوم جديد نظيف
+                    location.reload(); 
+                }
+            }
+        });
         // ==========================================
 // PWA INSTALLATION LOGIC 
 // ==========================================
