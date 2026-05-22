@@ -2421,13 +2421,19 @@ if(!state.history[dateString].athkar) {
                 showToast("تم التصفير", "تم إعادة الختمة إلى الدرس الأول بنجاح.");
             }
         }
-        // دالة إجبار الهاتف على حذف الكاش وتحميل التحديث الجديد فوراً
+        // دالة إجبار الهاتف على حذف الكاش وتحميل التحديث الجديد فوراً (النسخة المحسنة)
         async function forceUpdateApp() {
+            // 1. التحقق من وجود اتصال بالإنترنت أولاً
+            if (!navigator.onLine) {
+                showToast("خطأ في الاتصال 📶", "عفواً، يجب أن تكون متصلاً بالإنترنت لتحديث التطبيق.");
+                return;
+            }
+
             if (confirm("هل تريد تحديث التطبيق الآن لتنزيل آخر الميزات والإصلاحات؟\n(لن يتم حذف بياناتك أو تقدمك اليومي)")) {
-                showToast("جاري التحديث...", "يتم الآن جلب أحدث نسخة من السيرفر...");
+                showToast("جاري التحديث... ⏳", "يتم الآن جلب أحدث نسخة من السيرفر...");
                 
                 try {
-                    // 1. إلغاء تسجيل السيرفس وركر القديم
+                    // 2. إلغاء تسجيل السيرفس وركر القديم
                     if ('serviceWorker' in navigator) {
                         const registrations = await navigator.serviceWorker.getRegistrations();
                         for (let registration of registrations) {
@@ -2435,7 +2441,7 @@ if(!state.history[dateString].athkar) {
                         }
                     }
                     
-                    // 2. مسح كاش الملفات القديمة بالكامل
+                    // 3. مسح كاش الملفات القديمة بالكامل
                     if ('caches' in window) {
                         const keys = await caches.keys();
                         for (let key of keys) {
@@ -2443,10 +2449,10 @@ if(!state.history[dateString].athkar) {
                         }
                     }
                     
-                    // 3. إعادة تحميل الصفحة بشكل إجباري بعد ثانية
+                    // 4. إعادة تحميل الصفحة بشكل إجباري بعد ثانية ونصف
                     setTimeout(() => {
                         window.location.reload(true);
-                    }, 1000);
+                    }, 1500);
                     
                 } catch (error) {
                     // حل احتياطي في حال حدوث أي خطأ
