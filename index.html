@@ -333,7 +333,7 @@
                 <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
                     <i class="fa-solid fa-pen-to-square text-brand-500"></i> ملاحظات ويوميات
                 </h3>
-                <textarea id="daily-notes-input" onchange="saveState()" class="w-full h-24 text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-xl px-3 py-2 outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-brand-500 resize-none custom-scrollbar" placeholder="دوّن هنا أهم إنجازاتك، مشاعرك، أو ملاحظاتك لهذا اليوم..."></textarea>
+                <textarea id="daily-notes-input" onchange="saveState()" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" class="w-full min-h-[6rem] text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-xl px-3 py-2 outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-brand-500 overflow-hidden custom-scrollbar transition-all" placeholder="دوّن هنا أهم إنجازاتك، مشاعرك، أو ملاحظاتك لهذا اليوم..."></textarea>
             </div>
 
             <!-- Backup & Restore Box -->
@@ -366,6 +366,10 @@
                 <!-- زر تحديث التطبيق الإجباري -->
                 <button onclick="forceUpdateApp()" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-emerald-950/30 dark:hover:bg-emerald-900/50 dark:text-emerald-400 py-2 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5" title="تحديث التطبيق فوراً لتنزيل آخر الإصلاحات والميزات">
                     <i class="fa-solid fa-arrows-rotate"></i> تحديث التطبيق الآن 🔄
+                </button>
+                <!-- NEW: زر تحميل موارد التطبيق للعمل بدون إنترنت -->
+                <button onclick="downloadOfflineResources(event)" class="w-full mt-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 dark:bg-indigo-950/30 dark:hover:bg-indigo-900/50 dark:text-indigo-400 py-2 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5" title="تحميل ملفات التصميم والخطوط ليعمل التطبيق بدون إنترنت نهائياً">
+                    <i class="fa-solid fa-cloud-arrow-down"></i> تحميل الموارد للعمل Offline
                 </button>
                 <!-- زر تثبيت التطبيق PWA -->
                 <button id="install-pwa-btn" class="hidden w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5" title="تثبيت التطبيق على جهازك للوصول السريع">
@@ -551,6 +555,40 @@
                         خطط لمذاكرتك باحترافية. أضف التوقيت، اسم المادة، والدرس، ثم فرّع الدرس إلى مهام صغيرة قابلة للإنجاز لتضمن استيعابك الكامل للمنهج.
                     </p>
                 </div>
+                <!-- Dedicated Study Pomodoro Card -->
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl"></div>
+                    <div class="flex flex-col gap-1 w-full md:w-auto text-right">
+                        <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                            <i class="fa-solid fa-stopwatch text-indigo-500"></i> مؤقت التركيز المخصص للمذاكرة
+                        </h3>
+                        <p class="text-xs text-slate-400">اكتب عدد الدقائق المفضل لديك واضغط ابدأ للتركيز التام.</p>
+                    </div>
+                    
+                    <div class="flex flex-wrap items-center gap-4 w-full md:w-auto justify-center md:justify-end">
+                        <!-- Input for custom minutes -->
+                        <div class="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <span class="text-xs font-bold text-slate-500">المدة:</span>
+                            <input type="number" id="study-timer-input" min="1" max="180" value="25" onchange="setStudyTimerDuration()" class="w-14 text-center text-sm font-bold bg-transparent text-slate-800 dark:text-slate-100 outline-none">
+                            <span class="text-xs font-bold text-slate-500">دقيقة</span>
+                        </div>
+
+                        <!-- Timer Display -->
+                        <div class="bg-indigo-50 dark:bg-indigo-950/30 px-5 py-2.5 rounded-xl border border-indigo-100 dark:border-indigo-900/30">
+                            <span id="study-timer-display" class="text-2xl font-black text-indigo-600 dark:text-indigo-400 tracking-widest">25:00</span>
+                        </div>
+
+                        <!-- Controls -->
+                        <div class="flex gap-2">
+                            <button id="btn-study-timer-toggle" onclick="toggleStudyTimer()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm shadow-indigo-500/20">
+                                <i class="fa-solid fa-play"></i> <span id="btn-study-timer-text">ابدأ</span>
+                            </button>
+                            <button onclick="resetStudyTimer()" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 w-10 h-10 rounded-xl flex items-center justify-center transition-colors">
+                                <i class="fa-solid fa-arrow-rotate-left"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Add Study Block Form -->
                 <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
@@ -648,7 +686,7 @@
                         <label class="font-bold text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2 mb-2">
                             <i class="fa-solid fa-pen-clip text-amber-500"></i> صندوق المتشابهات وأخطاء الحفظ (يُحفظ تلقائياً)
                         </label>
-                        <textarea id="quran-notes-input" onchange="saveQuranNotes()" class="w-full h-16 text-xs bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-emerald-500 resize-none custom-scrollbar" placeholder="اكتب هنا الآيات التي تخطئ بها لتراجعها لاحقاً..."></textarea>
+                        <textarea id="quran-notes-input" onchange="saveQuranNotes()" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" class="w-full min-h-[4rem] text-xs bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-emerald-500 overflow-hidden custom-scrollbar transition-all" placeholder="اكتب هنا الآيات التي تخطئ بها لتراجعها لاحقاً..."></textarea>
                     </div>
                     
                     <div class="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-4">
@@ -1132,80 +1170,65 @@
                     </p>
                 </div>
 
-                <!-- Course Grid Tracker (Original Hardcoded) -->
+                <!-- Course Grid Tracker (Updated to Tasks) -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="original-courses-grid">
                     <!-- 1. E-Commerce -->
-                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 flex flex-col justify-between shadow-sm">
                         <div>
                             <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 uppercase tracking-wider mb-3 inline-block">تسويق وإدارة</span>
                             <h3 class="font-bold text-base text-slate-900 dark:text-white mb-2 leading-tight">دورة التجارة الإلكترونية وملحقاتها</h3>
-                            <p class="text-xs text-slate-400 leading-relaxed mb-4">تشمل: التسويق الرقمي، صناعة المحتوى، التصميم الاحترافي وبناء العلامة التجارية الشخصية (Personal Branding).</p>
+                            <p class="text-xs text-slate-400 leading-relaxed mb-4">التسويق الرقمي، صناعة المحتوى، وبناء العلامة التجارية.</p>
                             
-                            <!-- Custom dynamic lesson counters -->
-                            <div class="bg-slate-50 dark:bg-slate-800/40 rounded-xl p-3 border border-slate-100 dark:border-slate-800 mb-4">
-                                <span class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-2">تقدّمك بالدروس:</span>
-                                <div class="flex items-center justify-between gap-4">
-                                    <div class="flex items-center gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-1">
-                                        <button onclick="changeCourseCount('ecommerce', -1)" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors"><i class="fa-solid fa-minus text-xs"></i></button>
-                                        <span id="counter-ecommerce" class="w-10 text-center font-bold text-sm text-slate-900 dark:text-white">0</span>
-                                        <button onclick="changeCourseCount('ecommerce', 1)" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors"><i class="fa-solid fa-plus text-xs"></i></button>
-                                    </div>
-                                    <span class="text-[10px] font-bold text-slate-400">حلقة منجزة</span>
-                                </div>
+                            <div class="flex flex-col gap-2.5 mb-2" id="tasks-course-ecommerce"></div>
+                            <div class="flex gap-2 items-center mt-3 border-t border-slate-100 dark:border-slate-800/40 pt-3">
+                                <input type="text" id="add-task-input-course-ecommerce" onkeypress="handleAddTaskKey(event, 'course-ecommerce')" placeholder="أضف حلقة/درس..." class="flex-1 text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-xl px-2.5 py-1.5 outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-blue-500">
+                                <button onclick="addNewCustomTask('course-ecommerce')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-0.5 shrink-0 transition-colors">
+                                    <i class="fa-solid fa-plus"></i> إضافة
+                                </button>
                             </div>
                         </div>
-                        <a href="https://youtu.be/UKeoL_tNmGs?si=Tv6pofbc0fvRwvJX" target="_blank" class="w-full bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 py-3 rounded-xl font-bold text-xs text-center transition-all flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-circle-play"></i> ابدأ مشاهدة الدورة
+                        <a href="https://youtu.be/UKeoL_tNmGs?si=Tv6pofbc0fvRwvJX" target="_blank" class="mt-4 w-full bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 py-3 rounded-xl font-bold text-xs text-center transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-circle-play"></i> افتح الدورة
                         </a>
                     </div>
 
                     <!-- 2. Programming -->
-                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 flex flex-col justify-between shadow-sm">
                         <div>
                             <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 uppercase tracking-wider mb-3 inline-block">البرمجة والويب</span>
-                            <h3 class="font-bold text-base text-slate-900 dark:text-white mb-2 leading-tight">البرمجة مع إبراهيم عادل (أوكتوكود)</h3>
-                            <p class="text-xs text-slate-400 leading-relaxed mb-4">مسار شامل لتأسيس البرمجة والتفكير المنطقي عبر تطبيق OctuCode الاحترافي وقناتهم.</p>
+                            <h3 class="font-bold text-base text-slate-900 dark:text-white mb-2 leading-tight">البرمجة مع (أوكتوكود)</h3>
+                            <p class="text-xs text-slate-400 leading-relaxed mb-4">مسار شامل لتأسيس البرمجة والتفكير المنطقي.</p>
                             
-                            <!-- Custom dynamic lesson counters -->
-                            <div class="bg-slate-50 dark:bg-slate-800/40 rounded-xl p-3 border border-slate-100 dark:border-slate-800 mb-4">
-                                <span class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-2">تقدّمك بالدروس:</span>
-                                <div class="flex items-center justify-between gap-4">
-                                    <div class="flex items-center gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-1">
-                                        <button onclick="changeCourseCount('programming', -1)" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors"><i class="fa-solid fa-minus text-xs"></i></button>
-                                        <span id="counter-programming" class="w-10 text-center font-bold text-sm text-slate-900 dark:text-white">0</span>
-                                        <button onclick="changeCourseCount('programming', 1)" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors"><i class="fa-solid fa-plus text-xs"></i></button>
-                                    </div>
-                                    <span class="text-[10px] font-bold text-slate-400">حلقة منجزة</span>
-                                </div>
+                            <div class="flex flex-col gap-2.5 mb-2" id="tasks-course-programming"></div>
+                            <div class="flex gap-2 items-center mt-3 border-t border-slate-100 dark:border-slate-800/40 pt-3">
+                                <input type="text" id="add-task-input-course-programming" onkeypress="handleAddTaskKey(event, 'course-programming')" placeholder="أضف حلقة/درس..." class="flex-1 text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-xl px-2.5 py-1.5 outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-emerald-500">
+                                <button onclick="addNewCustomTask('course-programming')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-0.5 shrink-0 transition-colors">
+                                    <i class="fa-solid fa-plus"></i> إضافة
+                                </button>
                             </div>
                         </div>
-                        <a href="https://www.youtube.com/@OctuCode/playlists" target="_blank" class="w-full bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/20 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 py-3 rounded-xl font-bold text-xs text-center transition-all flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-circle-play"></i> قوائم تشغيل الأخطبوط
+                        <a href="https://www.youtube.com/@OctuCode/playlists" target="_blank" class="mt-4 w-full bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/20 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 py-3 rounded-xl font-bold text-xs text-center transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-circle-play"></i> افتح الدورة
                         </a>
                     </div>
 
                     <!-- 3. ICDL & Windows -->
-                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 flex flex-col justify-between shadow-sm">
                         <div>
                             <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 uppercase tracking-wider mb-3 inline-block">المهارات المكتبية</span>
-                            <h3 class="font-bold text-base text-slate-900 dark:text-white mb-2 leading-tight">دورة ICDL وتطبيقات ويندوز والإنتاجية</h3>
-                            <p class="text-xs text-slate-400 leading-relaxed mb-4">مهارات الحاسب الأساسية، وإتقان الوورد، الإكسل، وتطبيقات ويندوز المكتبية التي لا غنى عنها لأي تخصص.</p>
+                            <h3 class="font-bold text-base text-slate-900 dark:text-white mb-2 leading-tight">دورة تطبيقات ويندوز و ICDL</h3>
+                            <p class="text-xs text-slate-400 leading-relaxed mb-4">وورد، إكسل، وتطبيقات المكتب الأساسية.</p>
                             
-                            <!-- Custom dynamic lesson counters -->
-                            <div class="bg-slate-50 dark:bg-slate-800/40 rounded-xl p-3 border border-slate-100 dark:border-slate-800 mb-4">
-                                <span class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-2">تقدّمك بالدروس:</span>
-                                <div class="flex items-center justify-between gap-4">
-                                    <div class="flex items-center gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-1">
-                                        <button onclick="changeCourseCount('icdl', -1)" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors"><i class="fa-solid fa-minus text-xs"></i></button>
-                                        <span id="counter-icdl" class="w-10 text-center font-bold text-sm text-slate-900 dark:text-white">0</span>
-                                        <button onclick="changeCourseCount('icdl', 1)" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors"><i class="fa-solid fa-plus text-xs"></i></button>
-                                    </div>
-                                    <span class="text-[10px] font-bold text-slate-400">حلقة منجزة</span>
-                                </div>
+                            <div class="flex flex-col gap-2.5 mb-2" id="tasks-course-icdl"></div>
+                            <div class="flex gap-2 items-center mt-3 border-t border-slate-100 dark:border-slate-800/40 pt-3">
+                                <input type="text" id="add-task-input-course-icdl" onkeypress="handleAddTaskKey(event, 'course-icdl')" placeholder="أضف حلقة/درس..." class="flex-1 text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-xl px-2.5 py-1.5 outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500">
+                                <button onclick="addNewCustomTask('course-icdl')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-0.5 shrink-0 transition-colors">
+                                    <i class="fa-solid fa-plus"></i> إضافة
+                                </button>
                             </div>
                         </div>
-                        <a href="https://youtube.com/playlist?list=PLBYJSOYbCXnDglV7JlmJKV3dwwVZEZ662&si=u9ldreDjZaNaHkUZ" target="_blank" class="w-full bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/20 dark:hover:bg-purple-900/40 text-purple-600 dark:text-purple-400 py-3 rounded-xl font-bold text-xs text-center transition-all flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-circle-play"></i> قائمة تشغيل ICDL كاملة
+                        <a href="https://youtube.com/playlist?list=PLBYJSOYbCXnDglV7JlmJKV3dwwVZEZ662&si=u9ldreDjZaNaHkUZ" target="_blank" class="mt-4 w-full bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/20 dark:hover:bg-purple-900/40 text-purple-600 dark:text-purple-400 py-3 rounded-xl font-bold text-xs text-center transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-circle-play"></i> افتح الدورة
                         </a>
                     </div>
                 </div>
@@ -1329,7 +1352,7 @@
 
                 <!-- Input Area -->
                 <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 shadow-sm shrink-0 flex items-end gap-3">
-                    <textarea id="new-saved-note-input" rows="2" placeholder="اكتب رسالتك أو ملاحظتك هنا..." class="flex-1 text-sm bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-3 outline-none border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 transition-all custom-scrollbar resize-none"></textarea>
+                    <textarea id="new-saved-note-input" rows="2" oninput="this.style.height = ''; this.style.height = Math.min(this.scrollHeight, 150) + 'px'" placeholder="اكتب رسالتك أو ملاحظتك هنا..." class="flex-1 text-sm bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-3 outline-none border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 transition-all custom-scrollbar overflow-y-auto"></textarea>
                     <button onclick="addSavedNote()" class="w-12 h-12 shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center justify-center text-lg transition-all shadow-md shadow-indigo-500/30" title="إرسال وحفظ">
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
@@ -1573,6 +1596,15 @@
                     <div class="w-full h-64 relative mt-4">
                         <canvas id="progressChart"></canvas>
                     </div>
+                    <!-- Monthly Chart Container -->
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm mt-6">
+                    <h3 class="font-bold text-sm flex items-center gap-2 mb-4 text-slate-800 dark:text-slate-200">
+                        <i class="fa-solid fa-chart-area text-brand-500"></i> نظرة شاملة لالتزامك خلال هذا الشهر
+                    </h3>
+                    <div class="w-full h-48 relative">
+                        <canvas id="monthlyProgressChart"></canvas>
+                    </div>
+                </div>
                 </div>
 
             </div>
@@ -1782,6 +1814,7 @@
     <script>
         // Global variables for Chart and State
         let progressChartInstance = null;
+        let monthlyChartInstance = null;
         let pathRadarChartInstance = null;
         let quranLessons = []; // Will hold the 598 lessons
         // Generator for all 598 Quran lessons strictly based on the PDF mapping// Generator for all Quran lessons strictly based on the exact PDF mapping provided
@@ -1853,7 +1886,10 @@
             ],
             "english-speaking": [
                 { id: "easy-english-conversation", text: "التحدث والمحاكاة مع Easy English", desc: "كرر الحوارات بنفس نبرة الصوت وتحدث بثقة تامة.", completed: false }
-            ]
+            ],
+            "course-ecommerce": [],
+            "course-programming": [],
+            "course-icdl": []
         };
 
         const defaultStudyTables = {
@@ -1888,6 +1924,7 @@
             savedNotes: [], // NEW: Global saved messages
             examScores: [], // NEW: Test Scores Tracker
             timer: { minutes: 25, seconds: 0, initialMinutes: 25, intervalId: null, isRunning: false, label: "جلسة تركيز" },
+            studyTimer: { minutes: 25, seconds: 0, initialMinutes: 25, intervalId: null, isRunning: false },
             history: {} 
             // History tracker format: { "YYYY-MM-DD": { tasks: {}, studyTables: {}, progressPercent: 0, completedTasksCount: 0, notes: "", quranTasks: {lessonId: 1, hifz: false, rabt: false, muraja: false} } }
         };
@@ -1916,6 +1953,7 @@
             const isDark = document.documentElement.classList.contains('dark');
             localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
             if (progressChartInstance) renderProgressChart();
+            if (window.innerWidth < 1024) toggleMobileMenu();
         });
 
         if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -1941,10 +1979,21 @@
             }
         }
 
+        let globalAudioCtx = null; // إنشاء متغير عام يحفظ بيئة الصوت
+        
         function playBeep(type = "success") {
             if (!soundEnabled) return;
             try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                // إذا لم تكن موجودة، ننشئها مرة واحدة فقط
+                if (!globalAudioCtx) {
+                    globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                // إذا كانت في وضع السكون، نقوم بإيقاظها
+                if (globalAudioCtx.state === 'suspended') {
+                    globalAudioCtx.resume();
+                }
+                
+                const audioCtx = globalAudioCtx; // استخدام البيئة العامة
                 const oscillator = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
                 oscillator.connect(gainNode);
@@ -2008,9 +2057,13 @@
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
             showToast("نجاح التصدير", "تم حفظ نسخة احتياطية من بياناتك على جهازك.");
+            if (window.innerWidth < 1024) toggleMobileMenu();
         }
 
-        function triggerImport() { document.getElementById('import-file').click(); }
+        function triggerImport() { 
+    document.getElementById('import-file').click(); 
+    if (window.innerWidth < 1024) toggleMobileMenu();
+}
 
         function importData(event) {
             const file = event.target.files[0];
@@ -2044,6 +2097,7 @@
                 // بديل للهواتف القديمة
                 prompt("انسخ كود بياناتك من هنا للاحتفاظ به:", safeText);
             }
+            if (window.innerWidth < 1024) toggleMobileMenu();
         }
 
         function importDataFromText() {
@@ -2065,6 +2119,7 @@
             } catch(err) {
                 alert("حدث خطأ! الكود تالف. تأكد أنك قمت بنسخ الكود بالكامل دون نقصان أو إضافة مسافات.");
             }
+            if (window.innerWidth < 1024) toggleMobileMenu();
         }
         // --- END NEW ---
         // دالة مسح بيانات التطبيق بالكامل
@@ -2720,6 +2775,12 @@ if(!state.history[dateString].athkar) {
 
         function deleteStudyBlock(id) {
             if(confirm('هل أنت متأكد من حذف جلسة المذاكرة هذه بجميع مهامها؟')) {
+                const block = state.studyPath.find(b => b.id === id);
+                if (block && block.tasks) {
+                    block.tasks.forEach(task => {
+                        if (task.completed) updateGamificationRankSilently(-10);
+                    });
+                }
                 state.studyPath = state.studyPath.filter(b => b.id !== id);
                 saveState(); renderStudyPath(); updateAllProgress();
             }
@@ -2797,9 +2858,10 @@ if(!state.history[dateString].athkar) {
                 title: title,
                 tag: tag || "مهارة مخصصة",
                 desc: desc,
-                link: link,
-                count: 0
+                link: link
             });
+
+            if (!state.tasks[newId]) state.tasks[newId] = []; // تهيئة قائمة مهام للدورة
 
             document.getElementById('new-course-title').value = '';
             document.getElementById('new-course-tag').value = '';
@@ -2808,6 +2870,7 @@ if(!state.history[dateString].athkar) {
 
             saveState();
             renderCustomCourses();
+            renderTaskList(newId);
             showToast("تمت الإضافة", "تم إدراج الدورة الجديدة بنجاح في القائمة.");
         }
 
@@ -2819,28 +2882,24 @@ if(!state.history[dateString].athkar) {
             const courses = state.customCourses || [];
 
             courses.forEach(course => {
-                const linkHtml = course.link ? `<a href="${course.link}" target="_blank" class="w-full bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 py-3 rounded-xl font-bold text-xs text-center transition-all flex items-center justify-center gap-2 mt-auto"><i class="fa-solid fa-link"></i> رابط الدورة</a>` : '<div class="mt-auto"></div>';
+                const linkHtml = course.link ? `<a href="${course.link}" target="_blank" class="mt-4 w-full bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 py-3 rounded-xl font-bold text-xs text-center transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-link"></i> رابط الدورة</a>` : '';
                 
                 container.innerHTML += `
-                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 flex flex-col shadow-sm hover:shadow-md transition-shadow relative">
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 flex flex-col shadow-sm relative">
                         <button onclick="deleteCustomCourse('${course.id}')" class="absolute top-4 left-4 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 p-1.5 rounded-lg transition-colors" title="حذف هذه الدورة">
                             <i class="fa-solid fa-trash-can text-sm"></i>
                         </button>
-                        <div class="flex-1 flex flex-col">
-                            <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 uppercase tracking-wider mb-3 self-start">${course.tag}</span>
+                        <div>
+                            <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 uppercase tracking-wider mb-3 inline-block">${course.tag}</span>
                             <h3 class="font-bold text-base text-slate-900 dark:text-white mb-2 leading-tight pl-6">${course.title}</h3>
                             ${course.desc ? `<p class="text-xs text-slate-400 leading-relaxed mb-4">${course.desc}</p>` : '<div class="mb-4"></div>'}
                             
-                            <div class="bg-slate-50 dark:bg-slate-800/40 rounded-xl p-3 border border-slate-100 dark:border-slate-800 mb-4 mt-auto">
-                                <span class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-2">تقدّمك بالدروس:</span>
-                                <div class="flex items-center justify-between gap-4">
-                                    <div class="flex items-center gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-1">
-                                        <button onclick="changeCustomCourseCount('${course.id}', -1)" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors"><i class="fa-solid fa-minus text-xs"></i></button>
-                                        <span id="counter-custom-${course.id}" class="w-10 text-center font-bold text-sm text-slate-900 dark:text-white">${course.count}</span>
-                                        <button onclick="changeCustomCourseCount('${course.id}', 1)" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors"><i class="fa-solid fa-plus text-xs"></i></button>
-                                    </div>
-                                    <span class="text-[10px] font-bold text-slate-400">حلقة منجزة</span>
-                                </div>
+                            <div class="flex flex-col gap-2.5 mb-2" id="tasks-${course.id}"></div>
+                            <div class="flex gap-2 items-center mt-3 border-t border-slate-100 dark:border-slate-800/40 pt-3">
+                                <input type="text" id="add-task-input-${course.id}" onkeypress="handleAddTaskKey(event, '${course.id}')" placeholder="أضف حلقة/درس..." class="flex-1 text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-xl px-2.5 py-1.5 outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-brand-500">
+                                <button onclick="addNewCustomTask('${course.id}')" class="bg-brand-500 hover:bg-brand-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-0.5 shrink-0 transition-colors">
+                                    <i class="fa-solid fa-plus"></i> إضافة
+                                </button>
                             </div>
                         </div>
                         ${linkHtml}
@@ -2863,6 +2922,12 @@ if(!state.history[dateString].athkar) {
 
         function deleteCustomCourse(id) {
             if(confirm('هل أنت متأكد من حذف هذه الدورة من قائمتك بشكل نهائي؟')) {
+                if (state.tasks[id]) {
+                    state.tasks[id].forEach(task => {
+                        if (task.completed) updateGamificationRankSilently(-10);
+                    });
+                    delete state.tasks[id];
+                }
                 state.customCourses = state.customCourses.filter(c => c.id !== id);
                 saveState();
                 renderCustomCourses();
@@ -2885,8 +2950,10 @@ if(!state.history[dateString].athkar) {
             if (!state.customEnglishCourses) state.customEnglishCourses = [];
             
             state.customEnglishCourses.push({
-                id: newId, title: title, tag: tag || "مهارة إنجليزية", desc: desc, link: link, count: 0
+                id: newId, title: title, tag: tag || "مهارة إنجليزية", desc: desc, link: link
             });
+
+            if (!state.tasks[newId]) state.tasks[newId] = []; // تهيئة قائمة مهام
 
             document.getElementById('new-english-title').value = '';
             document.getElementById('new-english-tag').value = '';
@@ -2895,6 +2962,7 @@ if(!state.history[dateString].athkar) {
 
             saveState();
             renderCustomEnglishCourses();
+            renderTaskList(newId);
             showToast("تمت الإضافة", "تم إضافة دورتك بنجاح في مسار الإنجليزية.");
         }
 
@@ -2905,27 +2973,24 @@ if(!state.history[dateString].athkar) {
             const courses = state.customEnglishCourses || [];
 
             courses.forEach(course => {
-                const linkHtml = course.link ? `<a href="${course.link}" target="_blank" class="w-full bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-800/50 text-indigo-600 dark:text-indigo-400 py-3 rounded-xl font-bold text-xs text-center transition-all flex items-center justify-center gap-2 mt-auto"><i class="fa-solid fa-link"></i> فتح الدورة</a>` : '<div class="mt-auto"></div>';
+                const linkHtml = course.link ? `<a href="${course.link}" target="_blank" class="mt-4 w-full bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-800/50 text-indigo-600 dark:text-indigo-400 py-3 rounded-xl font-bold text-xs text-center transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-link"></i> فتح الدورة</a>` : '';
                 
                 container.innerHTML += `
                     <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 flex flex-col shadow-sm relative">
                         <button onclick="deleteCustomEnglishCourse('${course.id}')" class="absolute top-4 left-4 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 p-1.5 rounded-lg transition-colors" title="حذف الدورة">
                             <i class="fa-solid fa-trash-can text-sm"></i>
                         </button>
-                        <div class="flex-1 flex flex-col">
-                            <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400 uppercase tracking-wider mb-3 self-start">${course.tag}</span>
+                        <div>
+                            <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400 uppercase tracking-wider mb-3 inline-block">${course.tag}</span>
                             <h3 class="font-bold text-base text-slate-900 dark:text-white mb-2 leading-tight pl-6">${course.title}</h3>
                             ${course.desc ? `<p class="text-xs text-slate-400 leading-relaxed mb-4">${course.desc}</p>` : '<div class="mb-4"></div>'}
                             
-                            <div class="bg-slate-50 dark:bg-slate-800/40 rounded-xl p-3 border border-slate-100 dark:border-slate-800 mb-4 mt-auto">
-                                <span class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-2">الدروس المنجزة:</span>
-                                <div class="flex items-center justify-between gap-4">
-                                    <div class="flex items-center gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-1">
-                                        <button onclick="changeCustomEnglishCourseCount('${course.id}', -1)" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white"><i class="fa-solid fa-minus text-xs"></i></button>
-                                        <span id="counter-eng-${course.id}" class="w-10 text-center font-bold text-sm text-slate-900 dark:text-white">${course.count}</span>
-                                        <button onclick="changeCustomEnglishCourseCount('${course.id}', 1)" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white"><i class="fa-solid fa-plus text-xs"></i></button>
-                                    </div>
-                                </div>
+                            <div class="flex flex-col gap-2.5 mb-2" id="tasks-${course.id}"></div>
+                            <div class="flex gap-2 items-center mt-3 border-t border-slate-100 dark:border-slate-800/40 pt-3">
+                                <input type="text" id="add-task-input-${course.id}" onkeypress="handleAddTaskKey(event, '${course.id}')" placeholder="أضف حلقة/درس..." class="flex-1 text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-xl px-2.5 py-1.5 outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-indigo-500">
+                                <button onclick="addNewCustomTask('${course.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-0.5 shrink-0 transition-colors">
+                                    <i class="fa-solid fa-plus"></i> إضافة
+                                </button>
                             </div>
                         </div>
                         ${linkHtml}
@@ -2947,20 +3012,29 @@ if(!state.history[dateString].athkar) {
 
         function deleteCustomEnglishCourse(id) {
             if(confirm('هل أنت متأكد من حذف هذه الدورة من مسار الإنجليزية؟')) {
+                if (state.tasks[id]) {
+                    state.tasks[id].forEach(task => {
+                        if (task.completed) updateGamificationRankSilently(-10);
+                    });
+                    delete state.tasks[id];
+                }
                 state.customEnglishCourses = state.customEnglishCourses.filter(c => c.id !== id);
                 saveState();
                 renderCustomEnglishCourses();
             }
         }
         function renderAllTasksAndTables() {
-            for (let period in state.tasks) renderTaskList(period);
-            renderStudyPath();
-            for (let course in state.courses) {
-                const el = document.getElementById(`counter-${course}`);
-                if(el) el.innerText = state.courses[course];
-            }
+            // رسم حاويات الدورات أولاً لتكوين הـ IDs الخاصة بـ المهام
             renderCustomCourses();
             renderCustomEnglishCourses();
+
+            // رسم قائمة المهام داخل كل الحاويات (بما فيها الدورات المخصصة والأساسية)
+            for (let period in state.tasks) {
+                if(document.getElementById(`tasks-${period}`)) {
+                    renderTaskList(period);
+                }
+            }
+            renderStudyPath();
         }
 
         function changeCourseCount(course, amount) {
@@ -3116,7 +3190,18 @@ if(!state.history[dateString].athkar) {
             } else {
                 if(confirm('هل أنت متأكد من حذف هذه المهمة بجميع تفريعاتها؟')) {
                     const mainTask = state.todoList.find(t => t.id === mainId);
-                    if (mainTask && mainTask.completed && (!mainTask.subtasks || mainTask.subtasks.length === 0)) updateGamificationRankSilently(-10);
+                    if (mainTask) {
+                        // خصم نقاط المهمة الرئيسية إذا كانت مكتملة وليس لها أبناء
+                        if (mainTask.completed && (!mainTask.subtasks || mainTask.subtasks.length === 0)) {
+                            updateGamificationRankSilently(-10);
+                        }
+                        // خصم نقاط المهام الفرعية المكتملة
+                        if (mainTask.subtasks && mainTask.subtasks.length > 0) {
+                            mainTask.subtasks.forEach(sub => {
+                                if (sub.completed) updateGamificationRankSilently(-10);
+                            });
+                        }
+                    }
                     state.todoList = state.todoList.filter(t => t.id !== mainId);
                 } else return;
             }
@@ -3177,20 +3262,32 @@ if(!state.history[dateString].athkar) {
             if(dayData.todoList) dayData.todoList.forEach(m => { if(m.subtasks && m.subtasks.length > 0) m.subtasks.forEach(s => { todoT++; if(s.completed) todoC++; }); else { todoT++; if(m.completed) todoC++; }});
             let todoPct = todoT > 0 ? Math.round((todoC/todoT)*100) : 0;
 
-            let engT = 0, engC = 0;
-            ['english-general', 'english-listening', 'english-reading', 'english-vocab', 'english-speaking'].forEach(p => { if(dayData.tasks && dayData.tasks[p]) dayData.tasks[p].forEach(t => { engT++; if(t.completed) engC++; }); });
-            let engPct = engT > 0 ? Math.round((engC/engT)*100) : 0;
-
             let srCount = 0; if(state.spacedRepetition) state.spacedRepetition.forEach(item => { if(item.history && item.history.some(h => h.date === dateStr)) srCount++; });
             let srPct = srCount > 0 ? 100 : 0;
 
             let retroCount = 0; if(state.retroTimetable) state.retroTimetable.forEach(topic => { if(topic.reviews && topic.reviews.some(r => r.date === dateStr)) retroCount++; });
             let retroPct = retroCount > 0 ? 100 : 0;
 
-            let coursesTotal = 0;
-            if(state.courses) coursesTotal += (state.courses.ecommerce || 0) + (state.courses.programming || 0) + (state.courses.icdl || 0);
-            if(state.customCourses) state.customCourses.forEach(c => coursesTotal += (c.count || 0));
-            let coursesPct = coursesTotal > 0 ? 100 : 0;
+            let engT = 0, engC = 0;
+            let skillsT = 0, skillsC = 0;
+            
+            // حساب مهام الإنجليزي والمهارات (بما فيها الدورات المخصصة)
+            if (dayData.tasks) {
+                for (let key in dayData.tasks) {
+                    const tasksArray = dayData.tasks[key] || [];
+                    // مسار الإنجليزي (الأساسي + المخصص)
+                    if (['english-general', 'english-listening', 'english-reading', 'english-vocab', 'english-speaking'].includes(key) || key.startsWith('eng-')) {
+                        tasksArray.forEach(t => { engT++; if(t.completed) engC++; });
+                    }
+                    // مسار المهارات والدورات (الأساسي + المخصص)
+                    else if (['course-ecommerce', 'course-programming', 'course-icdl'].includes(key) || key.startsWith('c-')) {
+                        tasksArray.forEach(t => { skillsT++; if(t.completed) skillsC++; });
+                    }
+                }
+            }
+            
+            let engPct = engT > 0 ? Math.round((engC/engT)*100) : 0;
+            let coursesPct = skillsT > 0 ? Math.round((skillsC/skillsT)*100) : 0;
 
             // بناء البطاقات العشرة
             const createCard = (title, icon, color, pct, textStr) => {
@@ -3218,8 +3315,7 @@ if(!state.history[dateString].athkar) {
                 createCard("الإنجليزية", "fa-solid fa-language", "teal", engPct, `${engC}/${engT}`) +
                 createCard("الذكي", "fa-solid fa-brain", "violet", srPct, `${srCount} شيت`) +
                 createCard("العكسي", "fa-solid fa-table-list", "fuchsia", retroPct, `${retroCount} م`) +
-                createCard("المهارات", "fa-solid fa-graduation-cap", "amber", coursesPct, `${coursesTotal} ح`);
-
+                createCard("المهارات", "fa-solid fa-graduation-cap", "amber", coursesPct, `${skillsC}/${skillsT}`);
             // --- نظام المحلل الذكي ---
             const paths = [
                 { name: "الجدول اليومي", pct: tasksPct }, { name: "القرآن الكريم", pct: quranPct }, { name: "الأذكار", pct: athkarPct },
@@ -3296,10 +3392,84 @@ if(!state.history[dateString].athkar) {
                     }
                 });
             }
+
+            // --- تحديث المقارنة والسلسلة والرسم البياني لليوم المختار ---
+            const sortedDates = Object.keys(state.history).sort();
+            let currentProgress = calculateProgressValues().percentage; 
+            let previousProgress = 0;
+            let prevDateStr = "";
+
+            for(let i = sortedDates.length - 1; i >= 0; i--) {
+                if(sortedDates[i] < state.currentDate) {
+                    previousProgress = state.history[sortedDates[i]].progressPercent || 0;
+                    prevDateStr = sortedDates[i];
+                    break;
+                }
+            }
+
+            const compValEl = document.getElementById('stat-comparison-val');
+            const compBadgeEl = document.getElementById('stat-comparison-badge');
+            const compTextEl = document.getElementById('stat-comparison-text');
+            
+            if(compValEl && compBadgeEl && compTextEl) {
+                compValEl.innerText = `${currentProgress}%`;
+                if (prevDateStr) {
+                    let diff = currentProgress - previousProgress;
+                    compBadgeEl.classList.remove('hidden');
+                    if (diff > 0) {
+                        compBadgeEl.className = "px-2 py-1 rounded text-[10px] font-bold mb-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
+                        compBadgeEl.innerHTML = `<i class="fa-solid fa-arrow-trend-up"></i> +${diff}%`;
+                        compTextEl.innerText = `أداء أفضل من يوم (${prevDateStr}) بـ ${diff} نقطة!`;
+                    } else if (diff < 0) {
+                        compBadgeEl.className = "px-2 py-1 rounded text-[10px] font-bold mb-1 bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400";
+                        compBadgeEl.innerHTML = `<i class="fa-solid fa-arrow-trend-down"></i> ${diff}%`;
+                        compTextEl.innerText = `تراجع طفيف عن يوم (${prevDateStr}). يمكنك التعويض اليوم!`;
+                    } else {
+                        compBadgeEl.className = "px-2 py-1 rounded text-[10px] font-bold mb-1 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300";
+                        compBadgeEl.innerHTML = `<i class="fa-solid fa-equals"></i> متعادل`;
+                        compTextEl.innerText = `أداؤك مطابق تماماً ليوم (${prevDateStr}).`;
+                    }
+                } else {
+                    compBadgeEl.classList.add('hidden');
+                    compTextEl.innerText = "لا توجد بيانات لأيام سابقة للمقارنة.";
+                }
+            }
+
+            let streak = 0;
+            let todayObj = new Date(state.currentDate);
+            todayObj.setHours(0,0,0,0);
+            
+            for (let i = 0; i < 365; i++) {
+                let checkDate = new Date(todayObj);
+                checkDate.setDate(todayObj.getDate() - i);
+                let checkStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+                
+                let p = 0;
+                if (checkStr === state.currentDate) p = currentProgress;
+                else if (state.history[checkStr]) p = state.history[checkStr].progressPercent || 0;
+
+                if (p >= 50) streak++;
+                else if (i > 0) break;
+                else if (i === 0 && p < 50) {
+                    let yesterdayDate = new Date(todayObj);
+                    yesterdayDate.setDate(todayObj.getDate() - 1);
+                    let yStr = `${yesterdayDate.getFullYear()}-${String(yesterdayDate.getMonth() + 1).padStart(2, '0')}-${String(yesterdayDate.getDate()).padStart(2, '0')}`;
+                    let yp = state.history[yStr] ? state.history[yStr].progressPercent : 0;
+                    if(yp >= 50) continue; 
+                    else break;
+                }
+            }
+            const streakValEl = document.getElementById('stat-streak-val');
+            if (streakValEl) streakValEl.innerText = streak;
+
+            // تحديث الرسم البياني الخطي
+            renderProgressChart();
+            renderMonthlyChart();
         }
+
         function calculateProgressValues() {
             let totalTasksCount = 0;
-            let completedTasksCount = 0;
+            let completedTasksCount = 0; // جعلناه يقبل كسور عشرية للنسب الجزئية
 
             for (let period in state.tasks) {
                 const list = state.tasks[period] || [];
@@ -3320,76 +3490,64 @@ if(!state.history[dateString].athkar) {
                 });
             }
             
-           // Add Quran progress to daily tasks calculation
             if (state.history[state.currentDate]?.quranTasks) {
-                totalTasksCount += 3; // Hifz, Rabt, Muraja
+                totalTasksCount += 3;
                 const qTasks = state.history[state.currentDate].quranTasks;
                 if(qTasks.hifz) completedTasksCount++;
                 if(qTasks.rabt) completedTasksCount++;
                 if(qTasks.muraja) completedTasksCount++;
             }
-// Add Athkar progress to daily tasks calculation
-if (state.history[state.currentDate]?.athkar) {
-    const athk = state.history[state.currentDate].athkar;
-    totalTasksCount += 3; // أذكار الصباح، المساء، والنوم
-    if(athk.morning) completedTasksCount++;
-    if(athk.evening) completedTasksCount++;
-    if(athk.sleep) completedTasksCount++;
-}
-            // ---- الأسطر الجديدة لدمج المهام الحرة ----
+
+            if (state.history[state.currentDate]?.athkar) {
+                const athk = state.history[state.currentDate].athkar;
+                totalTasksCount += 3;
+                if(athk.morning) completedTasksCount++;
+                if(athk.evening) completedTasksCount++;
+                if(athk.sleep) completedTasksCount++;
+            }
+            
+            // التعديل هنا: المهام الحرة الفرعية تعطي نسبة من المهمة الرئيسية فقط
             if (state.todoList && state.todoList.length > 0) {
                 state.todoList.forEach(mainTask => {
+                    totalTasksCount++; // المشروع كله يعتبر مهمة واحدة في النسبة العامة
                     if (mainTask.subtasks && mainTask.subtasks.length > 0) {
-                        mainTask.subtasks.forEach(sub => {
-                            totalTasksCount++;
-                            if (sub.completed) completedTasksCount++;
-                        });
+                        let subsDone = mainTask.subtasks.filter(s => s.completed).length;
+                        completedTasksCount += (subsDone / mainTask.subtasks.length); // إضافة نسبة مئوية
                     } else {
-                        totalTasksCount++;
                         if (mainTask.completed) completedTasksCount++;
                     }
                 });
             }
-            // ----------------------------------------
-            // ---- دمج المراجعة الذكية (Spaced Repetition) لليوم ----
+            
             if (state.spacedRepetition && state.spacedRepetition.length > 0) {
                 state.spacedRepetition.forEach(item => {
                     const hasReviewedToday = item.history && item.history.some(h => h.date === state.currentDate);
                     if (hasReviewedToday) {
-                        totalTasksCount++;        // إضافة مهمة للعدد الكلي
-                        completedTasksCount++;    // احتسابها كمكتملة
+                        totalTasksCount++;
+                        completedTasksCount++;
                     }
                 });
             }
-            // ---- دمج مراجعات الجدول العكسي (التي تمت اليوم) ----
+            
             if (state.retroTimetable && state.retroTimetable.length > 0) {
                 state.retroTimetable.forEach(topic => {
-                    // التحقق مما إذا كان الموضوع يحتوي على مراجعة بتاريخ اليوم
                     const hasReviewedToday = topic.reviews && topic.reviews.some(r => r.date === state.currentDate);
                     if (hasReviewedToday) {
-                        totalTasksCount++;        // إضافة مهمة للعدد الكلي
-                        completedTasksCount++;    // إضافة المهمة كمكتملة
+                        totalTasksCount++;
+                        completedTasksCount++;
                     }
                 });
             }
-            // ----------------------------------------
-            // 👈 إضافة مسار التلاوة لنسبة الإنجاز (إذا قرأ 15 صفحة تحسب مهمة مكتملة)
+            
+            // التعديل هنا: التلاوة تعطي نسبة بناءً على عدد الصفحات
             if (state.history[state.currentDate]?.tilawaToday !== undefined) {
                 totalTasksCount += 1;
-                if (state.history[state.currentDate].tilawaToday >= 15) {
-                    completedTasksCount += 1;
-                }
-            }
-
-            // 👈 إضافة مسار الدورات لنسبة الإنجاز
-            if (state.history[state.currentDate]?.coursesToday > 0) {
-                let cToday = state.history[state.currentDate].coursesToday;
-                totalTasksCount += cToday; 
-                completedTasksCount += cToday;
+                let pagesRead = state.history[state.currentDate].tilawaToday;
+                completedTasksCount += Math.min(1, pagesRead / 15); // بحد أقصى 1 (ورد كامل)
             }
 
             const percentage = totalTasksCount > 0 ? Math.round((completedTasksCount / totalTasksCount) * 100) : 0;
-            return { total: totalTasksCount, completed: completedTasksCount, percentage: percentage };
+            return { total: totalTasksCount, completed: Math.floor(completedTasksCount), percentage: percentage };
         }
         // دالة تصفير مسار معين لليوم الحالي فقط
         function resetPathToday(path) {
@@ -3419,15 +3577,20 @@ if (state.history[state.currentDate]?.athkar) {
                     renderStudyPath();
                     break;
                 case 'english':
-                    ['english-general', 'english-listening', 'english-reading', 'english-vocab', 'english-speaking'].forEach(p => {
-                        if(state.tasks[p]) state.tasks[p].forEach(t => t.completed = false);
-                    });
-                    if(state.history[state.currentDate].coursesToday) state.history[state.currentDate].coursesToday = 0;
+                    for (let key in state.tasks) {
+                        if (['english-general', 'english-listening', 'english-reading', 'english-vocab', 'english-speaking'].includes(key) || key.startsWith('eng-')) {
+                            state.tasks[key].forEach(t => t.completed = false);
+                        }
+                    }
                     renderAllTasksAndTables();
                     break;
                 case 'skills':
-                    if(state.history[state.currentDate].coursesToday) state.history[state.currentDate].coursesToday = 0;
-                    // لا نصفّر العداد التراكمي للدورة، فقط نلغي تأثيرها من اليوم
+                    for (let key in state.tasks) {
+                        if (['course-ecommerce', 'course-programming', 'course-icdl'].includes(key) || key.startsWith('c-')) {
+                            state.tasks[key].forEach(t => t.completed = false);
+                        }
+                    }
+                    renderAllTasksAndTables();
                     break;
                 case 'todo':
                     if(state.todoList) state.todoList.forEach(m => {
@@ -3681,6 +3844,95 @@ if (state.history[state.currentDate]?.athkar) {
             state.timer.seconds = 0;
             updateTimerDisplay();
         }
+        // ==========================================
+        // STUDY PATH POMODORO TIMER FUNCTIONS
+        // ==========================================
+        function setStudyTimerDuration() {
+            const input = document.getElementById('study-timer-input');
+            let mins = parseInt(input.value);
+            if (isNaN(mins) || mins < 1) mins = 1;
+            if (mins > 180) mins = 180; // حد أقصى 3 ساعات
+            input.value = mins;
+
+            if (state.studyTimer.isRunning) toggleStudyTimer();
+            state.studyTimer.minutes = mins;
+            state.studyTimer.seconds = 0;
+            state.studyTimer.initialMinutes = mins;
+            updateStudyTimerDisplay();
+        }
+
+        function updateStudyTimerDisplay() {
+            const formattedMins = String(state.studyTimer.minutes).padStart(2, '0');
+            const formattedSecs = String(state.studyTimer.seconds).padStart(2, '0');
+            const displayEl = document.getElementById('study-timer-display');
+            if (displayEl) {
+                displayEl.innerText = `${formattedMins}:${formattedSecs}`;
+            }
+        }
+
+        function toggleStudyTimer() {
+            const btnText = document.getElementById('btn-study-timer-text');
+            const btnIcon = document.querySelector('#btn-study-timer-toggle i');
+            const displayEl = document.getElementById('study-timer-display');
+
+            if (state.studyTimer.isRunning) {
+                clearInterval(state.studyTimer.intervalId);
+                state.studyTimer.isRunning = false;
+                if(btnText) btnText.innerText = "ابدأ";
+                if(btnIcon) btnIcon.className = "fa-solid fa-play";
+                if(displayEl) displayEl.classList.remove('text-rose-500');
+            } else {
+                state.studyTimer.isRunning = true;
+                if(btnText) btnText.innerText = "إيقاف";
+                if(btnIcon) btnIcon.className = "fa-solid fa-pause";
+                if(displayEl) displayEl.classList.add('text-rose-500');
+                playBeep("success");
+
+                // حساب وقت انتهاء الجلسة بدقة متناهية لمنع تأثرها بخلفية الهاتف
+                const durationInMs = (state.studyTimer.minutes * 60 + state.studyTimer.seconds) * 1000;
+                state.studyTimer.endTime = Date.now() + durationInMs;
+
+                state.studyTimer.intervalId = setInterval(() => {
+                    const timeLeft = Math.max(0, Math.round((state.studyTimer.endTime - Date.now()) / 1000));
+
+                    state.studyTimer.minutes = Math.floor(timeLeft / 60);
+                    state.studyTimer.seconds = timeLeft % 60;
+
+                    updateStudyTimerDisplay();
+
+                    if (timeLeft === 0) {
+                        clearInterval(state.studyTimer.intervalId);
+                        state.studyTimer.isRunning = false;
+                        if(btnText) btnText.innerText = "ابدأ";
+                        if(btnIcon) btnIcon.className = "fa-solid fa-play";
+                        if(displayEl) displayEl.classList.remove('text-rose-500');
+
+                        playBeep("alarm");
+                        setTimeout(() => playBeep("alarm"), 700);
+
+                        showToast("انتهت جلسة المذاكرة! 📚", "رائع جداً! لقد أتممت وقت المذاكرة المخصص بنجاح.");
+                        
+                        if ("Notification" in window && Notification.permission === "granted") {
+                            new Notification("انتهت جلسة المذاكرة! 📚", {
+                                body: "لقد أتممت وقت المذاكرة بنجاح، خذ قسطاً من الراحة الآن.",
+                                icon: "https://cdn-icons-png.flaticon.com/512/1086/1086933.png"
+                            });
+                        }
+                        
+                        state.studyTimer.minutes = state.studyTimer.initialMinutes;
+                        state.studyTimer.seconds = 0;
+                        updateStudyTimerDisplay();
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetStudyTimer() {
+            if (state.studyTimer.isRunning) toggleStudyTimer();
+            state.studyTimer.minutes = state.studyTimer.initialMinutes;
+            state.studyTimer.seconds = 0;
+            updateStudyTimerDisplay();
+        }
 
         function changeCalendarMonth(offset) {
             calendarDate.setMonth(calendarDate.getMonth() + offset);
@@ -3743,76 +3995,7 @@ if (state.history[state.currentDate]?.athkar) {
             document.getElementById('stat-total-tasks').innerText = totalTasksAllTime;
             document.getElementById('stat-best-day').innerText = `${bestDayPercent}%`;
 
-            const sortedDates = Object.keys(state.history).sort();
-            let currentProgress = calculateProgressValues().percentage; 
-            let previousProgress = 0;
-            let prevDateStr = "";
-
-            for(let i = sortedDates.length - 1; i >= 0; i--) {
-                if(sortedDates[i] < state.currentDate) {
-                    previousProgress = state.history[sortedDates[i]].progressPercent || 0;
-                    prevDateStr = sortedDates[i];
-                    break;
-                }
-            }
-
-            const compValEl = document.getElementById('stat-comparison-val');
-            const compBadgeEl = document.getElementById('stat-comparison-badge');
-            const compTextEl = document.getElementById('stat-comparison-text');
             
-            if(compValEl && compBadgeEl && compTextEl) {
-                compValEl.innerText = `${currentProgress}%`;
-                if (prevDateStr) {
-                    let diff = currentProgress - previousProgress;
-                    compBadgeEl.classList.remove('hidden');
-                    if (diff > 0) {
-                        compBadgeEl.className = "px-2 py-1 rounded text-[10px] font-bold mb-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
-                        compBadgeEl.innerHTML = `<i class="fa-solid fa-arrow-trend-up"></i> +${diff}%`;
-                        compTextEl.innerText = `أداء أفضل من يوم (${prevDateStr}) بـ ${diff} نقطة!`;
-                    } else if (diff < 0) {
-                        compBadgeEl.className = "px-2 py-1 rounded text-[10px] font-bold mb-1 bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400";
-                        compBadgeEl.innerHTML = `<i class="fa-solid fa-arrow-trend-down"></i> ${diff}%`;
-                        compTextEl.innerText = `تراجع طفيف عن يوم (${prevDateStr}). يمكنك التعويض اليوم!`;
-                    } else {
-                        compBadgeEl.className = "px-2 py-1 rounded text-[10px] font-bold mb-1 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300";
-                        compBadgeEl.innerHTML = `<i class="fa-solid fa-equals"></i> متعادل`;
-                        compTextEl.innerText = `أداؤك مطابق تماماً ليوم (${prevDateStr}).`;
-                    }
-                } else {
-                    compBadgeEl.classList.add('hidden');
-                    compTextEl.innerText = "لا توجد بيانات لأيام سابقة للمقارنة.";
-                }
-            }
-
-            let streak = 0;
-            let todayObj = new Date(state.currentDate);
-            todayObj.setHours(0,0,0,0);
-            
-            for (let i = 0; i < 365; i++) {
-                let checkDate = new Date(todayObj);
-                checkDate.setDate(todayObj.getDate() - i);
-                let checkStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
-                
-                let p = 0;
-                if (checkStr === state.currentDate) p = currentProgress;
-                else if (state.history[checkStr]) p = state.history[checkStr].progressPercent || 0;
-
-                if (p >= 50) streak++;
-                else if (i > 0) break;
-                else if (i === 0 && p < 50) {
-                    let yesterdayDate = new Date(todayObj);
-                    yesterdayDate.setDate(todayObj.getDate() - 1);
-                    let yStr = `${yesterdayDate.getFullYear()}-${String(yesterdayDate.getMonth() + 1).padStart(2, '0')}-${String(yesterdayDate.getDate()).padStart(2, '0')}`;
-                    let yp = state.history[yStr] ? state.history[yStr].progressPercent : 0;
-                    if(yp >= 50) continue; 
-                    else break;
-                }
-            }
-            const streakValEl = document.getElementById('stat-streak-val');
-            if (streakValEl) streakValEl.innerText = streak;
-
-            updateGamificationRankSilently();
-            renderProgressChart();
             renderHeatmap();
         }
 
@@ -3865,6 +4048,61 @@ if (state.history[state.currentDate]?.athkar) {
                         x: { ticks: { color: textColor, font: {family: 'Cairo'} }, grid: { color: gridColor } }
                     },
                     plugins: { legend: { labels: { color: textColor, font: {family: 'Cairo', weight: 'bold'} } } }
+                }
+            });
+        }
+        function renderMonthlyChart() {
+            const ctx = document.getElementById('monthlyProgressChart');
+            if (!ctx) return;
+
+            let labels = [];
+            let dataPoints = [];
+            
+            // جلب الشهر والسنة المحددين حالياً في التقويم
+            const year = calendarDate.getFullYear();
+            const month = calendarDate.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate(); // عدد أيام هذا الشهر
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                labels.push(d); // وضع أرقام الأيام (1, 2, 3...)
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                
+                let p = 0;
+                if (dateStr === state.currentDate) {
+                    p = calculateProgressValues().percentage;
+                } else if (state.history[dateStr]) {
+                    p = state.history[dateStr].progressPercent || 0;
+                }
+                dataPoints.push(p);
+            }
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#cbd5e1' : '#475569';
+            const gridColor = isDark ? '#1e293b' : '#f1f5f9';
+
+            if (monthlyChartInstance) monthlyChartInstance.destroy();
+
+            monthlyChartInstance = new Chart(ctx, {
+                type: 'bar', // استخدمنا أعمدة (Bar) ليكون مختلفاً ويوضح كل يوم بدقة
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'نسبة الإنجاز (%)',
+                        data: dataPoints,
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)', // لون أخضر شفاف قليلاً
+                        hoverBackgroundColor: '#059669',
+                        borderRadius: 4, // جعل زوايا الأعمدة دائرية لتبدو عصرية
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, max: 100, ticks: { color: textColor, font: {family: 'Cairo'} }, grid: { color: gridColor } },
+                        x: { ticks: { color: textColor, font: {family: 'Cairo'} }, grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } } // إخفاء المربع التوضيحي لتوفير المساحة
                 }
             });
         }
@@ -4963,6 +5201,59 @@ saveState();
                 }
             }
         });
+        // ==========================================
+        // OFFLINE RESOURCES DOWNLOAD LOGIC (تحميل الموارد يدوياً)
+        // ==========================================
+        async function downloadOfflineResources(event) {
+            if (!navigator.onLine) {
+                showToast("لا يوجد اتصال 📶", "يجب أن تكون متصلاً بالإنترنت لمرة واحدة لتحميل الموارد.");
+                return;
+            }
+
+            const btn = event.currentTarget;
+            const originalHtml = btn.innerHTML;
+            
+            // تغيير شكل الزر أثناء التحميل
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...`;
+            btn.disabled = true;
+
+            showToast("جاري التحميل... ⏳", "يتم الآن حفظ ملفات التطبيق (الخطوط، الأيقونات، التصميم)، يرجى عدم إغلاق التطبيق...");
+
+            // قائمة بجميع الروابط الخارجية التي يحتاجها التطبيق ليعمل
+            const resourcesToCache = [
+                window.location.href, // الصفحة الحالية
+                'https://cdn.tailwindcss.com',
+                'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap',
+                'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+                'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js',
+                'https://cdn.jsdelivr.net/npm/chart.js'
+            ];
+
+            try {
+                // فتح مساحة تخزين خاصة داخل المتصفح
+                const cache = await caches.open('hms-static-resources-offline');
+                
+                // تحميل الملفات واحداً تلو الآخر وتخزينها
+                await Promise.all(resourcesToCache.map(async (url) => {
+                    try {
+                        const request = new Request(url, { mode: 'cors' });
+                        const response = await fetch(request);
+                        await cache.put(request, response);
+                    } catch (e) {
+                        console.warn("تعذر تحميل: ", url, e);
+                    }
+                }));
+
+                showToast("نجاح التحميل ✅", "تم حفظ الموارد! التطبيق الآن جاهز بنسبة 100% للعمل بدون إنترنت.");
+            } catch (error) {
+                console.error("Cache error:", error);
+                showToast("تنبيه", "حدث خطأ بسيط، ولكن تم تخزين معظم الملفات بنجاح.");
+            } finally {
+                // إعادة الزر لشكله الطبيعي
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        }
         // ==========================================
 // PWA INSTALLATION LOGIC 
 // ==========================================
