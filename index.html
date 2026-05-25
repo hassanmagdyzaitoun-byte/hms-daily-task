@@ -19,7 +19,8 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <!-- Chart.js for Advanced Analytics and Progress Tracking -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    <!-- localForage for unlimited IndexedDB storage -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -2047,9 +2048,9 @@
             if(navigator.share) navigator.share({ title: 'إنجازي اليوم', text: text }).catch(err => console.log("Share failed", err));
             else navigator.clipboard.writeText(text).then(() => showToast("تم النسخ بنجاح", "تم نسخ رسالة الإنجاز للحافظة، يمكنك لصقها ومشاركتها مع أصدقائك الآن!"));
         }
-
-        function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem('achievement_planner_state_v4') || "{}");
+        async function exportData() {
+            const dataObj = await localforage.getItem('achievement_planner_state_v4') || {};
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataObj));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
             downloadAnchorNode.setAttribute("download", "hms_daily_task_backup.json");
@@ -2061,19 +2062,20 @@
         }
 
         function triggerImport() { 
-    document.getElementById('import-file').click(); 
-    if (window.innerWidth < 1024) toggleMobileMenu();
-}
+            document.getElementById('import-file').click(); 
+            if (window.innerWidth < 1024) toggleMobileMenu();
+        }
 
         function importData(event) {
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
                     const importedState = JSON.parse(e.target.result);
                     if (importedState.history || importedState.courses) {
-                        localStorage.setItem('achievement_planner_state_v4', JSON.stringify(importedState));
+                        await localforage.setItem('achievement_planner_state_v4', importedState);
+                        localStorage.setItem('achievement_planner_state_v4', JSON.stringify(importedState)); // حفظ نسخة احتياطية
                         showToast("نجاح الاستعادة", "تم استعادة البيانات بنجاح! جاري تحديث الصفحة...");
                         setTimeout(() => location.reload(), 2000);
                     } else alert("ملف النسخة الاحتياطية غير صالح.");
@@ -2081,11 +2083,10 @@
             };
             reader.readAsText(file);
         }
-        // --- NEW: دوال النسخ واللصق السريع للبيانات كنص ---
-        function exportDataToText() {
-            const dataStr = localStorage.getItem('achievement_planner_state_v4') || "{}";
-            // تشفير البيانات لضمان عدم تلفها عند إرسالها في الواتساب أو تيليجرام
-            const safeText = btoa(encodeURIComponent(dataStr));
+
+        async function exportDataToText() {
+            const dataObj = await localforage.getItem('achievement_planner_state_v4') || {};
+            const safeText = btoa(encodeURIComponent(JSON.stringify(dataObj)));
             
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(safeText).then(() => {
@@ -2094,22 +2095,21 @@
                     prompt("تعذر النسخ التلقائي. انسخ الكود التالي يدوياً:", safeText);
                 });
             } else {
-                // بديل للهواتف القديمة
                 prompt("انسخ كود بياناتك من هنا للاحتفاظ به:", safeText);
             }
             if (window.innerWidth < 1024) toggleMobileMenu();
         }
 
-        function importDataFromText() {
+        async function importDataFromText() {
             const pastedText = prompt("يرجى لصق كود البيانات الذي قمت بنسخه سابقاً هنا:\n(تنبيه: سيتم استبدال بياناتك الحالية)");
             if (!pastedText || pastedText.trim() === "") return;
             
             try {
-                // فك تشفير البيانات
                 const jsonStr = decodeURIComponent(atob(pastedText.trim()));
                 const importedState = JSON.parse(jsonStr);
                 
                 if (importedState.history || importedState.courses) {
+                    await localforage.setItem('achievement_planner_state_v4', importedState);
                     localStorage.setItem('achievement_planner_state_v4', JSON.stringify(importedState));
                     showToast("نجاح الاستعادة", "تم استعادة بياناتك بنجاح! جاري تحديث التطبيق...");
                     setTimeout(() => location.reload(), 2000);
@@ -2121,39 +2121,48 @@
             }
             if (window.innerWidth < 1024) toggleMobileMenu();
         }
-        // --- END NEW ---
-        // دالة مسح بيانات التطبيق بالكامل
-        function clearAllAppData() {
+
+        async function clearAllAppData() {
             if(confirm("تحذير خطير ⚠️\nهل أنت متأكد بنسبة 100% أنك تريد مسح جميع بيانات التطبيق؟\n(سيتم حذف المهام، المذاكرة، الرتبة، وكل شيء للبدء من جديد ولا يمكن التراجع عن هذا الإجراء!)")) {
-                // تأكيد إضافي لمنع الخطأ غير المقصود
                 if(confirm("تأكيد أخير: هل تريد مسح البيانات حقاً؟")) {
+                    await localforage.removeItem('achievement_planner_state_v4');
                     localStorage.removeItem('achievement_planner_state_v4');
                     alert("تم مسح جميع البيانات بنجاح. سيتم إعادة تشغيل التطبيق كأنه جديد.");
-                    location.reload(); // إعادة تحميل الصفحة لتفريغ البيانات
+                    location.reload(); 
                 }
             }
         }
 
-        function initApp() {
-            generateQuranLessonsData(); // Load the 598 lessons
+        async function initApp() {
+            generateQuranLessonsData(); 
 
-            const savedState = localStorage.getItem('achievement_planner_state_v4');
-            if (savedState) {
-                try {
-                    const parsed = JSON.parse(savedState);
-                    if (parsed.history) state.history = parsed.history;
-                    if (parsed.courses) state.courses = parsed.courses;
-                    if (parsed.customCourses) state.customCourses = parsed.customCourses; 
-                    if (parsed.customEnglishCourses) state.customEnglishCourses = parsed.customEnglishCourses;
-                    if (parsed.quran) state.quran = parsed.quran; 
-                    if (parsed.spacedRepetition) state.spacedRepetition = parsed.spacedRepetition;
-                    if (parsed.retroTimetable) state.retroTimetable = parsed.retroTimetable;
-                    if (parsed.retroTables) state.retroTables = parsed.retroTables;
-                    if (parsed.savedNotes) state.savedNotes = parsed.savedNotes;
-                    if (parsed.examScores) state.examScores = parsed.examScores;
-                    if (parsed.gamification) state.gamification = parsed.gamification;
-if (parsed.rewards) state.rewards = parsed.rewards;
-                } catch (e) { console.error("Error parsing saved state", e); }
+            try {
+                let savedState = await localforage.getItem('achievement_planner_state_v4');
+                
+                if (!savedState) {
+                    const oldLocalStorageData = localStorage.getItem('achievement_planner_state_v4');
+                    if (oldLocalStorageData) {
+                        savedState = JSON.parse(oldLocalStorageData);
+                        await localforage.setItem('achievement_planner_state_v4', savedState);
+                    }
+                }
+
+                if (savedState) {
+                    if (savedState.history) state.history = savedState.history;
+                    if (savedState.courses) state.courses = savedState.courses;
+                    if (savedState.customCourses) state.customCourses = savedState.customCourses; 
+                    if (savedState.customEnglishCourses) state.customEnglishCourses = savedState.customEnglishCourses;
+                    if (savedState.quran) state.quran = savedState.quran; 
+                    if (savedState.spacedRepetition) state.spacedRepetition = savedState.spacedRepetition;
+                    if (savedState.retroTimetable) state.retroTimetable = savedState.retroTimetable;
+                    if (savedState.retroTables) state.retroTables = savedState.retroTables;
+                    if (savedState.savedNotes) state.savedNotes = savedState.savedNotes;
+                    if (savedState.examScores) state.examScores = savedState.examScores;
+                    if (savedState.gamification) state.gamification = savedState.gamification;
+                    if (savedState.rewards) state.rewards = savedState.rewards;
+                }
+            } catch (e) { 
+                console.error("خطأ في استخراج البيانات المحفوظة", e); 
             }
             
             let targetDate = new Date();
@@ -2164,29 +2173,25 @@ if (parsed.rewards) state.rewards = parsed.rewards;
             
             loadDateData(todayStr);
 
-          document.getElementById('main-nav').addEventListener('click', (e) => {
+            document.getElementById('main-nav').addEventListener('click', (e) => {
                 const btn = e.target.closest('button');
                 if (!btn) return;
                 const tab = btn.dataset.tab;
                 
-                // إزالة التفعيل من كل الأزرار
                 document.querySelectorAll('.nav-btn').forEach(b => {
                     b.classList.remove('active', 'text-brand-700', 'bg-brand-50', 'dark:text-brand-300', 'dark:bg-brand-950/30', 'font-bold');
                     b.classList.add('text-slate-600', 'dark:text-slate-400', 'font-medium');
                 });
                 
-                // تفعيل الزر المضغوط عليه
                 btn.classList.add('active', 'text-brand-700', 'bg-brand-50', 'dark:text-brand-300', 'dark:bg-brand-950/30', 'font-bold');
                 btn.classList.remove('text-slate-600', 'dark:text-slate-400', 'font-medium');
 
-                // إخفاء كل المسارات وإظهار المسار المطلوب فقط
                 document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
                 const targetTab = document.getElementById(`tab-${tab}`);
                 if (targetTab) {
                     targetTab.classList.remove('hidden');
                 }
                 
-                // إغلاق القائمة الجانبية تلقائياً على الهاتف بعد اختيار مسار
                 if (window.innerWidth < 1024) {
                     const sidebar = document.getElementById('app-sidebar');
                     const backdrop = document.getElementById('sidebar-backdrop');
@@ -2215,15 +2220,9 @@ if (parsed.rewards) state.rewards = parsed.rewards;
                 if (notesInput) notesInput.value = state.history[dateString].notes || "";
                 
                 if(!state.history[dateString].quranTasks) {
-                    // تهيئة الأذكار لليوم إذا لم تكن موجودة
-if(!state.history[dateString].athkar) {
-    state.history[dateString].athkar = {
-        morning: false,
-        evening: false,
-        sleep: false,
-        tasbeeh: { subhan: 0, hamd: 0, akbar: 0, istighfar: 0 }
-    };
-}
+                    if(!state.history[dateString].athkar) {
+                        state.history[dateString].athkar = { morning: false, evening: false, sleep: false, tasbeeh: { subhan: 0, hamd: 0, akbar: 0, istighfar: 0 } };
+                    }
                     state.history[dateString].quranTasks = { lessonId: state.quran.currentLesson, hifz: false, rabt: false, muraja: false };
                 }
             } else {
@@ -2232,17 +2231,17 @@ if(!state.history[dateString].athkar) {
                 state.studyPath = [];
                 if (notesInput) notesInput.value = "";
                 state.history[dateString] = {
-                tasks: state.tasks,
-                studyPath: state.studyPath,
-                todoList: state.todoList,
-                progressPercent: 0,
-                completedTasksCount: 0,
-                notes: "",
-                quranTasks: { lessonId: state.quran.currentLesson, hifz: false, rabt: false, muraja: false },
-                athkar: { morning: false, evening: false, sleep: false, tasbeeh: { subhan: 0, hamd: 0, akbar: 0, istighfar: 0 } },
-                tilawaToday: 0,
-                coursesToday: 0
-            };
+                    tasks: state.tasks,
+                    studyPath: state.studyPath,
+                    todoList: state.todoList,
+                    progressPercent: 0,
+                    completedTasksCount: 0,
+                    notes: "",
+                    quranTasks: { lessonId: state.quran.currentLesson, hifz: false, rabt: false, muraja: false },
+                    athkar: { morning: false, evening: false, sleep: false, tasbeeh: { subhan: 0, hamd: 0, akbar: 0, istighfar: 0 } },
+                    tilawaToday: 0,
+                    coursesToday: 0
+                };
             }
 
             const dateObj = new Date(dateString);
@@ -2265,9 +2264,9 @@ if(!state.history[dateString].athkar) {
             renderTilawaTab();
             renderSRTab();
             renderRetroTab();
-            renderAthkarTab(); // <-- إضافة دالة العرض للأذكار
-            renderSavedNotes(); // عرض الرسائل المحفوظة
-            renderExamsTab(); // عرض سجل الاختبارات
+            renderAthkarTab();
+            renderSavedNotes();
+            renderExamsTab();
             updateAllProgress();
         }
 
@@ -2290,13 +2289,12 @@ if(!state.history[dateString].athkar) {
                 quranTasks: state.history[state.currentDate].quranTasks,
                 athkar: state.history[state.currentDate].athkar,
                 tilawaToday: state.history[state.currentDate].tilawaToday || 0,
-                coursesToday: state.history[state.currentDate].coursesToday || 0 // 👈 تمت إضافة هذا السطر
+                coursesToday: state.history[state.currentDate].coursesToday || 0
             };
 
             state.history[state.currentDate] = updatedDayData;
         }
 
-        // 👈 دالة جديدة لحساب الدروس المنجزة في نفس اليوم
         function recordDailyCourseProgress(amount) {
             if (!state.history[state.currentDate].coursesToday) state.history[state.currentDate].coursesToday = 0;
             state.history[state.currentDate].coursesToday += amount;
@@ -2305,7 +2303,7 @@ if(!state.history[dateString].athkar) {
 
         function saveState() {
             saveCurrentDayToHistory();
-            localStorage.setItem('achievement_planner_state_v4', JSON.stringify({
+            localforage.setItem('achievement_planner_state_v4', {
                 history: state.history,
                 courses: state.courses,
                 customCourses: state.customCourses,
@@ -2318,11 +2316,11 @@ if(!state.history[dateString].athkar) {
                 examScores: state.examScores,
                 gamification: state.gamification,
                 rewards: state.rewards
-            }));
+            }).catch(function(err) {
+                console.error("خطأ في حفظ البيانات:", err);
+            });
             if(!document.getElementById('tab-calendar').classList.contains('hidden')) renderCalendarAndStats();
         }
-
-        // --- NEW: QURAN PATH LOGIC ---
         function renderQuranTab() {
             const todayQ = state.history[state.currentDate]?.quranTasks;
             if(!todayQ) return;
