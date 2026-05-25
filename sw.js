@@ -38,30 +38,28 @@ self.addEventListener('activate', (event) => {
   return self.clients.claim();
 });
 
-// 3. جلب البيانات (Fetch) - نظام الإنترنت أولاً (Network-First)
+// 3. جلب البيانات (Fetch) - نظام (Stale-While-Revalidate) للسرعة القصوى
 self.addEventListener('fetch', (event) => {
-  // تخطي الطلبات التي ليست من نوع http أو https
+  // تخطي الطلبات التي ليست http/https (مثل إضافات المتصفح)
   if (!event.request.url.startsWith('http')) return;
 
   event.respondWith(
-    // المحاولة الأولى: جلب النسخة المحدثة من الإنترنت (Netlify)
-    fetch(event.request).then((networkResponse) => {
-      // إذا نجح الاتصال بالإنترنت، نقوم بحفظ/تحديث هذه النسخة في الكاش للمستقبل
-      if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
-      }
-      return networkResponse; // إرجاع النسخة الأونلاين للمستخدم
-
-    }).catch(() => {
-      // المحاولة الثانية: إذا انقطع الإنترنت، نبحث عن الملف في الذاكرة (Offline)
-      return caches.match(event.request).then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse; // إرجاع النسخة المخزنة ليعمل التطبيق بدون إنترنت
+    caches.match(event.request).then((cachedResponse) => {
+      // جلب النسخة الأحدث من الإنترنت في الخلفية
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
+        if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
         }
+        return networkResponse;
+      }).catch(() => {
+        // في حال انقطاع الإنترنت تماماً، لا تفعل شيئاً هنا، سيعتمد على الكاش
       });
+
+      // إرجاع النسخة المخزنة فوراً (للسرعة)، أو الانتظار لجلبها من الإنترنت إذا لم تكن مخزنة
+      return cachedResponse || fetchPromise;
     })
   );
 });
