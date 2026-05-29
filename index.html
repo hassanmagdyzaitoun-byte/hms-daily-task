@@ -2684,7 +2684,7 @@
 
             list.forEach(task => {
                 const scheduleBtn = !isSchedulePeriod ? `
-                    <button onclick="openScheduleModal('${task.text.replace(/'/g, "\\'")}')" class="text-brand-500 hover:text-brand-700 p-1.5 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-900/30 transition-all md:opacity-0 md:group-hover:opacity-100 shrink-0" title="إضافة هذه المهمة لجدول اليوم">
+                    <button onclick="openScheduleModal('${task.text.replace(/'/g, "\\'")}', 'tasks', '${period}', '${task.id}')" class="text-brand-500 hover:text-brand-700 p-1.5 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-900/30 transition-all md:opacity-0 md:group-hover:opacity-100 shrink-0" title="إضافة هذه المهمة لجدول اليوم">
                         <i class="fa-solid fa-calendar-plus text-sm"></i>
                     </button>
                 ` : '';
@@ -2744,25 +2744,77 @@
         }
 
         function toggleTaskNew(period, taskId, checkbox) {
-    const list = state.tasks[period] || [];
-    const task = list.find(t => t.id === taskId);
-    if (task) {
-        task.completed = checkbox.checked;
-        const container = checkbox.closest('div');
-        if (container) {
-            if (checkbox.checked) {
-                container.classList.add('bg-brand-50/30', 'dark:bg-brand-950/10', 'border-brand-500/30');
-                showToast("رائع جداً!", "لقد أنجزت إحدى مهامك بنجاح.");
-                updateGamificationRankSilently(10); // ✅ إضافة 10 نقاط
-            } else {
-                container.classList.remove('bg-brand-50/30', 'dark:bg-brand-950/10', 'border-brand-500/30');
-                updateGamificationRankSilently(-10); // ✅ خصم 10 نقاط
+            const list = state.tasks[period] || [];
+            const task = list.find(t => t.id === taskId);
+            
+            if (task) {
+                const isNowCompleted = checkbox.checked;
+                task.completed = isNowCompleted;
+                
+                const container = checkbox.closest('div');
+                if (container) {
+                    if (isNowCompleted) {
+                        container.classList.add('bg-brand-50/30', 'dark:bg-brand-950/10', 'border-brand-500/30');
+                        showToast("رائع جداً!", "لقد أنجزت إحدى مهامك بنجاح.");
+                    } else {
+                        container.classList.remove('bg-brand-50/30', 'dark:bg-brand-950/10', 'border-brand-500/30');
+                    }
+                }
+
+                // --------- التزامن مع المسار الأصلي ---------
+                // إذا كانت المهمة مرحلة من مسار آخر، نقوم بوضع علامة عليها في مسارها الأصلي لكي لا تحتسب مرتين
+                if (task.linkedPath && task.linkedParentId) {
+                    let originTaskFound = false;
+                    
+                    if (task.linkedPath === 'tasks' && state.tasks[task.linkedParentId]) {
+                        // مسار المهارات أو الإنجليزي
+                        const originTask = state.tasks[task.linkedParentId].find(t => t.id === task.linkedSubId);
+                        if (originTask) { originTask.completed = isNowCompleted; originTaskFound = true; }
+                        
+                    } else if (task.linkedPath === 'studyPath' && state.studyPath) {
+                        // مسار المذاكرة
+                        const block = state.studyPath.find(b => b.id === task.linkedParentId);
+                        if (block && block.tasks) {
+                            const originTask = block.tasks.find(t => t.id === task.linkedSubId);
+                            if (originTask) { originTask.completed = isNowCompleted; originTaskFound = true; }
+                        }
+                        
+                    } else if (task.linkedPath === 'todoList' && state.todoList) {
+                        // مسار المهام الحرة
+                        const mainTask = state.todoList.find(t => t.id === task.linkedParentId);
+                        if (mainTask) {
+                            if (task.linkedSubId && task.linkedSubId !== "null") {
+                                const originTask = mainTask.subtasks.find(s => s.id === task.linkedSubId);
+                                if (originTask) { originTask.completed = isNowCompleted; originTaskFound = true; }
+                            } else {
+                                mainTask.completed = isNowCompleted; originTaskFound = true;
+                                if (mainTask.subtasks) mainTask.subtasks.forEach(sub => sub.completed = isNowCompleted);
+                            }
+                        }
+                    }
+
+                    // إعادة رسم الواجهات إذا تم إيجاد المهمة الأصلية
+                    if (originTaskFound) {
+                        if (task.linkedPath === 'tasks') renderTaskList(task.linkedParentId);
+                        if (task.linkedPath === 'studyPath') renderStudyPath();
+                        if (task.linkedPath === 'todoList') renderTodoList();
+                    }
+                }
+
+                // حساب النقاط (تضاف مرة واحدة فقط)
+                // إذا كانت المهمة مربوطة بمسار آخر، لا نضيف نقاط هنا (لأنها ستضاف أو أضيفت بالفعل عبر المسار الآخر أو العكس لتجنب التكرار)
+                if (!task.linkedPath) {
+                    if (isNowCompleted) {
+                        updateGamificationRankSilently(10); 
+                    } else {
+                        updateGamificationRankSilently(-10); 
+                    }
+                }
+
+                saveState();
+                updateAllProgress();
             }
         }
-        saveState();
-        updateAllProgress();
-    }
-}
 
         // --- NEW: STUDY PATH LOGIC ---
         function renderStudyPath() {
@@ -2788,7 +2840,7 @@
                             <div class="flex items-center gap-3 p-2.5 mt-2 rounded-xl border border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all group ${task.completed ? 'opacity-70' : ''}">
                                 <input type="checkbox" onchange="toggleStudyTask('${block.id}', '${task.id}')" ${task.completed ? 'checked' : ''} class="w-4 h-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-500 accent-indigo-500 cursor-pointer">
                                 <input type="text" value="${task.text}" onchange="updateStudyTaskText('${block.id}', '${task.id}', this.value)" class="flex-1 text-xs md:text-sm bg-transparent border-b border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-indigo-500 focus:outline-none text-slate-700 dark:text-slate-300 ${task.completed ? 'line-through text-slate-400' : ''}">
-                                <button onclick="openScheduleModal('مذاكرة: ${task.text.replace(/'/g, "\\'")}')" class="text-brand-400 hover:text-brand-600 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all" title="أضف للجدول">
+                                <button onclick="openScheduleModal('مذاكرة: ${task.text.replace(/'/g, "\\'")}', 'studyPath', '${block.id}', '${task.id}')" class="text-brand-400 hover:text-brand-600 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all" title="أضف للجدول">
                                     <i class="fa-solid fa-calendar-plus text-sm"></i>
                                 </button>
                                 <button onclick="deleteStudyTask('${block.id}', '${task.id}')" class="text-rose-400 hover:text-rose-600 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all">
@@ -2914,10 +2966,17 @@
         // --- END STUDY PATH LOGIC ---
         // --- ADD TO SCHEDULE LOGIC ---
         let pendingTaskToSchedule = "";
+        let pendingTaskPath = ""; // نوع المسار (tasks, studyPath, todoList)
+        let pendingTaskParentId = ""; // الآيدي الأب (الفترة، البلوك، المهمة الرئيسية)
+        let pendingTaskSubId = ""; // الآيدي الابن (المهمة نفسها)
 
-        function openScheduleModal(taskText) {
+        function openScheduleModal(taskText, path, parentId, subId) {
             if(!taskText) return;
             pendingTaskToSchedule = taskText;
+            pendingTaskPath = path || "";
+            pendingTaskParentId = parentId || "";
+            pendingTaskSubId = subId || "";
+            
             document.getElementById('schedule-task-text').innerText = taskText;
             const modal = document.getElementById('schedule-task-modal');
             modal.classList.remove('hidden');
@@ -2926,6 +2985,9 @@
 
         function closeScheduleModal() {
             pendingTaskToSchedule = "";
+            pendingTaskPath = "";
+            pendingTaskParentId = "";
+            pendingTaskSubId = "";
             const modal = document.getElementById('schedule-task-modal');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
@@ -2936,7 +2998,17 @@
             
             const newId = 't-' + Date.now();
             if (!state.tasks[period]) state.tasks[period] = [];
-            state.tasks[period].push({ id: newId, text: pendingTaskToSchedule, desc: "مرحلة من المسارات", completed: false });
+            
+            // حفظ بيانات الربط داخل المهمة الجديدة المضافة للجدول
+            state.tasks[period].push({ 
+                id: newId, 
+                text: pendingTaskToSchedule, 
+                desc: "مرحلة من المسارات", 
+                completed: false,
+                linkedPath: pendingTaskPath,
+                linkedParentId: pendingTaskParentId,
+                linkedSubId: pendingTaskSubId
+            });
             
             saveState();
             renderTaskList(period);
@@ -3178,7 +3250,7 @@
                             <div class="flex items-center gap-3 p-2.5 ms-6 md:ms-10 mt-2 rounded-xl border border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all group ${sub.completed ? 'opacity-70' : ''}">
                                 <input type="checkbox" onchange="toggleSubTodo('${mainTask.id}', '${sub.id}')" ${sub.completed ? 'checked' : ''} class="w-4 h-4 rounded border-slate-300 text-sky-500 focus:ring-sky-500 accent-sky-500 cursor-pointer">
                                 <input type="text" value="${sub.text}" onchange="updateTodoText('${mainTask.id}', '${sub.id}', this.value)" class="flex-1 text-xs md:text-sm bg-transparent border-b border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-sky-500 focus:outline-none text-slate-700 dark:text-slate-300 ${sub.completed ? 'line-through text-slate-400' : ''}">
-                                <button onclick="openScheduleModal('${sub.text.replace(/'/g, "\\'")}')" class="text-brand-400 hover:text-brand-600 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all" title="أضف للجدول">
+                                <button onclick="openScheduleModal('${sub.text.replace(/'/g, "\\'")}', 'todoList', '${mainTask.id}', '${sub.id}')" class="text-brand-400 hover:text-brand-600 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all" title="أضف للجدول">
                                     <i class="fa-solid fa-calendar-plus text-sm"></i>
                                 </button>
                                 <button onclick="deleteTodo('${mainTask.id}', '${sub.id}')" class="text-rose-400 hover:text-rose-600 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all">
@@ -3200,7 +3272,7 @@
                                     ${subTotal > 0 ? `<span class="text-[10px] font-bold text-sky-600 dark:text-sky-400 mt-1 block">إنجاز المهام الفرعية: ${subCompleted}/${subTotal} (${progressPercent}%)</span>` : ''}
                                 </div>
                                 <div class="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all">
-                                    <button onclick="openScheduleModal('${mainTask.text.replace(/'/g, "\\'")}')" class="text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/30 p-2 rounded-xl transition-colors" title="إضافة للجدول اليومي">
+                                    <button onclick="openScheduleModal('${mainTask.text.replace(/'/g, "\\'")}', 'todoList', '${mainTask.id}', null)" class="text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/30 p-2 rounded-xl transition-colors" title="إضافة للجدول اليومي">
                                         <i class="fa-solid fa-calendar-plus"></i>
                                     </button>
                                     <button onclick="deleteTodo('${mainTask.id}', null)" class="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 p-2 rounded-xl transition-colors" title="حذف المهمة بالكامل">
@@ -3587,8 +3659,11 @@
             for (let period in state.tasks) {
                 const list = state.tasks[period] || [];
                 list.forEach(task => {
-                    totalTasksCount++;
-                    if (task.completed) completedTasksCount++;
+                    // إذا كانت المهمة مربوطة بمسار آخر، لا تحسبها في إجمالي مهام الجدول الزمني لتجنب التكرار الوهمي!
+                    if (!task.linkedPath) {
+                        totalTasksCount++;
+                        if (task.completed) completedTasksCount++;
+                    }
                 });
             }
 
