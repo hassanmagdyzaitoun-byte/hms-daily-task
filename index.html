@@ -1808,9 +1808,15 @@
             <span class="text-white font-bold text-sm">صفحة:</span>
             <input type="number" id="mushaf-page-input" min="1" max="604" value="1" onchange="changeMushafPage(this.value)" class="w-16 text-center text-sm font-bold bg-slate-700 text-white rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-cyan-500 border border-slate-600">
         </div>
-        <button onclick="addTilawaPage(1)" class="px-3 py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1">
-            <i class="fa-solid fa-check"></i> سجلها بوردك
-        </button>
+        <div class="flex items-center gap-1.5">
+            <!-- الزر الجديد لحفظ التقدم الإجمالي -->
+            <button onclick="saveCurrentKhatmaPage()" class="px-3 py-2 bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1" title="حفظ هذه الصفحة كتقدمك الحالي في الختمة">
+                <i class="fa-solid fa-bookmark"></i> احفظ الصفحة
+            </button>
+            <button onclick="addTilawaPage(1)" class="px-3 py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1" title="تسجيل صفحة واحدة إضافية في الورد اليومي">
+                <i class="fa-solid fa-check"></i> سجل ورد
+            </button>
+        </div>
     </div>
 
     <!-- Text-based Quran & Tafsir Viewer Container -->
@@ -5536,6 +5542,19 @@
             modal.classList.remove('flex');
             document.body.style.overflow = '';
             closeTafsirPane();
+        }
+
+        // الدالة الجديدة لحفظ تقدم الختمة من داخل المصحف
+        function saveCurrentKhatmaPage() {
+            if (!state.tilawa) state.tilawa = { currentPage: 0, khatmasCount: 0 };
+            
+            // تعيين الصفحة الحالية في الختمة لتكون نفس صفحة المصحف المفتوحة الآن
+            state.tilawa.currentPage = currentMushafPage;
+            
+            saveState();
+            renderTilawaTab();
+            updateAllProgress();
+            showToast("تم حفظ الصفحة 📌", `تم حفظ تقدمك في الختمة عند الصفحة [${currentMushafPage}] بنجاح.`);
         }
 
         async function changeMushafPage(pageNumber) {
