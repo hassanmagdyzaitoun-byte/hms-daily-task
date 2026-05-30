@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hms-daily-task-cache-v5'; // تم التحديث لضمان عمل النظام الجديد
+const CACHE_NAME = 'hms-daily-task-cache-v6'; // تم التحديث لضمان عمل النظام الجديد
 
 // قائمة الملفات والمكتبات الأساسية التي نريد حفظها مبدئياً
 const ASSETS_TO_CACHE = [
