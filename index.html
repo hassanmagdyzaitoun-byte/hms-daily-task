@@ -1813,7 +1813,7 @@
             <button onclick="saveCurrentKhatmaPage()" class="px-3 py-2 bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1" title="حفظ هذه الصفحة كتقدمك الحالي في الختمة">
                 <i class="fa-solid fa-bookmark"></i> احفظ الصفحة
             </button>
-            <button onclick="addTilawaPage(1)" class="px-3 py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1" title="تسجيل صفحة واحدة إضافية في الورد اليومي">
+            <button id="btn-log-tilawa" onclick="logMushafSession()" class="px-3 py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1" title="حساب وتسجيل عدد الصفحات التي قرأتها">
                 <i class="fa-solid fa-check"></i> سجل ورد
             </button>
         </div>
@@ -5521,6 +5521,7 @@
         // TEXT-BASED OFFLINE MUSHAF & TAFSIR SYSTEM (نظام المصحف والتفسير المدمج)
         // ==========================================
         let currentMushafPage = 1;
+        let mushafStartPageForLogging = 1; // المتغير الجديد لحفظ صفحة البداية
 
         function openOfflineMushaf() {
             const modal = document.getElementById('mushaf-viewer-modal');
@@ -5533,10 +5534,26 @@
                 startPage = state.tilawa.currentPage + 1;
                 if (startPage > 604) startPage = 1;
             }
+            
+            // تهيئة المتغير وزر التسجيل عند فتح المصحف
+            mushafStartPageForLogging = startPage;
+            const logBtn = document.getElementById('btn-log-tilawa');
+            if(logBtn) {
+                logBtn.disabled = false;
+                logBtn.className = "px-3 py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer";
+                logBtn.innerHTML = `<i class="fa-solid fa-check"></i> سجل ورد`;
+            }
+
             changeMushafPage(startPage);
         }
 
         function closeOfflineMushaf() {
+            // تسجيل الورد تلقائياً قبل الإغلاق إذا نسي المستخدم
+            const logBtn = document.getElementById('btn-log-tilawa');
+            if(logBtn && !logBtn.disabled && currentMushafPage !== mushafStartPageForLogging) {
+                logMushafSession();
+            }
+
             const modal = document.getElementById('mushaf-viewer-modal');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
@@ -5555,6 +5572,31 @@
             renderTilawaTab();
             updateAllProgress();
             showToast("تم حفظ الصفحة 📌", `تم حفظ تقدمك في الختمة عند الصفحة [${currentMushafPage}] بنجاح.`);
+        }
+        // الدالة الجديدة لحساب وتسجيل الورد وإغلاق الزر
+        function logMushafSession() {
+            const logBtn = document.getElementById('btn-log-tilawa');
+            if(logBtn.disabled) return; 
+
+            let pagesRead = 0;
+            
+            // حساب ذكي يراعي إذا كان المستخدم قد أنهى ختمة وبدأ في أخرى
+            if (currentMushafPage >= mushafStartPageForLogging) {
+                pagesRead = currentMushafPage - mushafStartPageForLogging + 1;
+            } else {
+                // قرأ من نهاية المصحف وعاد للبداية (مثال: من 600 إلى 5)
+                pagesRead = (604 - mushafStartPageForLogging + 1) + currentMushafPage;
+            }
+            
+            if (pagesRead < 1) pagesRead = 1; // حماية إضافية
+
+            addTilawaPage(pagesRead);
+
+            logBtn.disabled = true;
+            logBtn.className = "px-3 py-2 bg-slate-500/20 text-slate-400 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-not-allowed opacity-70";
+            logBtn.innerHTML = `<i class="fa-solid fa-check-double"></i> سُجلت ${pagesRead} صفحة`;
+            
+            mushafStartPageForLogging = currentMushafPage + 1; 
         }
 
         async function changeMushafPage(pageNumber) {
