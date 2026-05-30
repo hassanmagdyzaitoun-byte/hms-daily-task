@@ -2058,6 +2058,7 @@
             customCourses: [], 
             customEnglishCourses: [],
             quran: { currentLesson: 1, notes: "" }, // NEW: Global Quran Tracker with Notes
+            tilawa: { currentPage: 0, khatmasCount: 0 }, // NEW: Global Tilawa Tracker
             spacedRepetition: [],
             retroTimetable: [],
             retroTables: [{ id: 'default', name: 'الجدول الأساسي' }],
@@ -2292,6 +2293,7 @@
                     if (savedState.customCourses) state.customCourses = savedState.customCourses; 
                     if (savedState.customEnglishCourses) state.customEnglishCourses = savedState.customEnglishCourses;
                     if (savedState.quran) state.quran = savedState.quran; 
+                    if (savedState.tilawa) state.tilawa = savedState.tilawa;
                     if (savedState.spacedRepetition) state.spacedRepetition = savedState.spacedRepetition;
                     if (savedState.retroTimetable) state.retroTimetable = savedState.retroTimetable;
                     if (savedState.retroTables) state.retroTables = savedState.retroTables;
@@ -2451,6 +2453,7 @@
                 customCourses: state.customCourses,
                 customEnglishCourses: state.customEnglishCourses,
                 quran: state.quran,
+                tilawa: state.tilawa,
                 spacedRepetition: state.spacedRepetition,
                 retroTimetable: state.retroTimetable,
                 retroTables: state.retroTables,
@@ -5548,18 +5551,46 @@
         }
 
         function closeOfflineMushaf() {
-            // تسجيل الورد تلقائياً قبل الإغلاق إذا نسي المستخدم
-            const logBtn = document.getElementById('btn-log-tilawa');
-            if(logBtn && !logBtn.disabled && currentMushafPage !== mushafStartPageForLogging) {
-                logMushafSession();
+    // 1. حساب الصفحات المقروءة تلقائياً وتسجيلها في الورد اليومي بشكل آمن
+    if (currentMushafPage !== mushafStartPageForLogging) {
+        let pagesRead = 0;
+        
+        if (currentMushafPage > mushafStartPageForLogging) {
+            // تصفح طبيعي للأمام
+            pagesRead = currentMushafPage - mushafStartPageForLogging;
+        } else if (currentMushafPage < mushafStartPageForLogging) {
+            // التحقق من حدوث ختمة فعلاً (الانتقال من صفحات النهاية إلى صفحات البداية)
+            if (mushafStartPageForLogging > 550 && currentMushafPage < 50) {
+                pagesRead = (604 - mushafStartPageForLogging) + currentMushafPage;
+            } else {
+                // تصفح عادي للخلف أو تقليب صفحات عشوائي، لا يتم احتسابه كصفحات مقروءة إضافية لمنع الأخطاء
+                pagesRead = 0;
             }
-
-            const modal = document.getElementById('mushaf-viewer-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            document.body.style.overflow = '';
-            closeTafsirPane();
         }
+
+        if (pagesRead > 0) {
+            // إضافة الصفحات لليوم الحالي
+            state.history[state.currentDate].tilawaToday = (state.history[state.currentDate].tilawaToday || 0) + pagesRead;
+            showToast("تم حفظ التقدم", `تم تسجيل قراءة ${pagesRead} صفحة في وردك اليومي.`);
+        }
+    }
+
+    // 2. تحديث الصفحة الحالية للختمة مباشرة لتطابق صفحة المصحف الحالية فوراً
+    if (!state.tilawa) state.tilawa = { currentPage: 0, khatmasCount: 0 };
+    state.tilawa.currentPage = currentMushafPage;
+
+    // 3. حفظ البيانات فوراً لقاعدة البيانات وتحديث الواجهة
+    saveState();
+    renderTilawaTab();
+    updateAllProgress();
+
+    // 4. إغلاق نافذة المصحف
+    const modal = document.getElementById('mushaf-viewer-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.style.overflow = '';
+    closeTafsirPane();
+}
 
         // الدالة الجديدة لحفظ تقدم الختمة من داخل المصحف
         function saveCurrentKhatmaPage() {
