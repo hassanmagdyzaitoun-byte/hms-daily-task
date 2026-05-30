@@ -13,6 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" rel="stylesheet">
     <!-- Font Awesome Icons for dashboard symbols -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Confetti Library for 100% Progress Celebration -->
@@ -107,6 +108,20 @@
             width: 100%;
         }
         #exit-focus-btn { display: none; }
+        /* تهيئة خط المصحف الشريف ليكون مريحاً ومنسقاً */
+        #mushaf-text-container {
+            font-family: 'Amiri Quran', serif !important;
+            line-height: 3.2 !important; /* تباعد سطور مريح لمنع تداخل الحركات */
+            font-size: 1.65rem !important; /* حجم مثالي للقراءة */
+            text-align: justify;
+            text-align-last: center;
+        }
+        @media (max-width: 640px) {
+            #mushaf-text-container {
+                font-size: 1.35rem !important; /* حجم مناسب للشاشات الصغيرة */
+                line-height: 2.9 !important;
+            }
+        }
         body.focus-mode #exit-focus-btn { display: flex; }
 
         /* Print Styles */
@@ -137,7 +152,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3 space-x-reverse">
                 <!-- زر القائمة الجانبية للهاتف -->
-                <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="lg:hidden p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors" title="القائمة الرئيسية">
+                <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors" title="القائمة الرئيسية">
                     <i class="fa-solid fa-bars text-xl"></i>
                 </button>
                 
@@ -193,13 +208,13 @@
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col lg:flex-row gap-6">
         
         <!-- Mobile Sidebar Backdrop (الخلفية الداكنة عند فتح القائمة) -->
-        <div id="sidebar-backdrop" onclick="toggleMobileMenu()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
+        <div id="sidebar-backdrop" onclick="toggleMobileMenu()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden transition-opacity"></div>
 
         <!-- Sidebar Navigation (Responsive) -->
-        <aside id="app-sidebar" class="fixed inset-y-0 right-0 z-50 w-[80%] max-w-sm bg-slate-50 dark:bg-slate-900 shadow-2xl lg:shadow-none p-5 pb-32 lg:p-0 lg:pb-0 overflow-y-auto custom-scrollbar transform translate-x-full lg:translate-x-0 lg:static lg:w-64 shrink-0 flex flex-col gap-4 transition-transform duration-300 border-l border-slate-200 dark:border-slate-800 lg:border-none lg:bg-transparent lg:dark:bg-transparent">
+        <aside id="app-sidebar" class="fixed inset-y-0 right-0 z-50 w-[80%] max-w-sm bg-slate-50 dark:bg-slate-900 shadow-2xl p-5 pb-32 overflow-y-auto custom-scrollbar transform translate-x-full transition-transform duration-300 border-l border-slate-200 dark:border-slate-800 flex flex-col gap-4">
             
             <!-- Mobile Sidebar Header (عنوان وزر إغلاق للهاتف فقط) -->
-            <div class="flex items-center justify-between lg:hidden mb-2">
+            <div class="flex items-center justify-between mb-2">
                 <h2 class="font-bold text-lg text-slate-800 dark:text-white"><i class="fa-solid fa-compass text-brand-500"></i> القائمة الرئيسية</h2>
                 <button onclick="toggleMobileMenu()" class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-rose-500 hover:bg-rose-100 transition-colors">
                     <i class="fa-solid fa-xmark"></i>
@@ -847,21 +862,33 @@
             </div>
         </div>
     </div>
-    <!-- NEW: External eQuran Website Link -->
-<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm text-center mt-6">
-    <div class="w-20 h-20 bg-cyan-50 dark:bg-cyan-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-        <i class="fa-solid fa-book-quran text-4xl text-cyan-500"></i>
+    <!-- NEW: Offline Internal Mushaf Section -->
+<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm mt-6">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="flex items-center gap-4">
+            <div class="w-16 h-16 bg-cyan-100 dark:bg-cyan-900/40 rounded-full flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-book-open-reader text-2xl text-cyan-600 dark:text-cyan-400"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-slate-800 dark:text-white text-lg mb-1">المصحف المدمج (يعمل بدون إنترنت)</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-md">
+                    حمل صفحات القرآن الكريم كاملة (604 صفحة برواية حفص) مرة واحدة لتقرأ من داخل التطبيق بدون الحاجة للإنترنت نهائياً.
+                </p>
+            </div>
+        </div>
+        <div class="flex flex-col gap-2 w-full md:w-auto shrink-0">
+            <button onclick="openOfflineMushaf()" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-md shadow-cyan-500/30 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-book-open"></i> افتح المصحف
+            </button>
+            <button id="btn-download-mushaf" onclick="downloadFullMushaf()" class="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 px-6 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700">
+                <i class="fa-solid fa-cloud-arrow-down"></i> تحميل المصحف للأوفلاين
+            </button>
+            <div id="mushaf-progress-container" class="hidden w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-1 relative overflow-hidden">
+                <div id="mushaf-progress-bar" class="bg-cyan-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <p id="mushaf-progress-text" class="hidden text-[10px] text-center font-bold text-slate-500 mt-1">جاري التحميل...</p>
+        </div>
     </div>
-    <h3 class="font-bold text-slate-800 dark:text-white text-lg mb-2">القراءة من المصحف الإلكتروني (eQuran)</h3>
-    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
-        نظراً لأن الموقع لا يسمح بعرضه مباشرة داخل التطبيق، وفرنا لك هذا الزر للوصول السريع والمباشر إليه.
-    </p>
-    <a href="https://equran.me/" target="_blank" class="inline-flex items-center gap-2 bg-cyan-500 hover:bg-cyan-600 text-white px-8 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-cyan-500/30 active:scale-95">
-        <i class="fa-solid fa-arrow-up-right-from-square"></i> افتح المصحف الإلكتروني الآن
-    </a>
-    <p class="text-xs text-slate-400 dark:text-slate-500 mt-5 font-bold">
-        💡 نصيحة: بعد أن تقرأ وردك من الموقع، عُد إلى هنا وسجّل الصفحات التي قرأتها في الأعلى ☝️
-    </p>
 </div>
 </div>
 <!-- NEW: Tab Athkar (مسار الأذكار التفاعلي) -->
@@ -1770,6 +1797,41 @@
             </div>
         </div>
     </div>
+    <!-- نافذة عرض المصحف النصي (Mushaf Text Viewer Modal) -->
+<div id="mushaf-viewer-modal" class="hidden fixed inset-0 z-[120] bg-slate-900/95 backdrop-blur-md flex-col items-center justify-between p-2 sm:p-4 transition-opacity">
+    <!-- Header -->
+    <div class="w-full max-w-2xl flex justify-between items-center bg-slate-800/50 border border-slate-700 p-3 rounded-2xl mb-2 shrink-0">
+        <button onclick="closeOfflineMushaf()" class="w-10 h-10 flex items-center justify-center bg-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white rounded-xl transition-colors">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+        <div class="flex items-center gap-2">
+            <span class="text-white font-bold text-sm">صفحة:</span>
+            <input type="number" id="mushaf-page-input" min="1" max="604" value="1" onchange="changeMushafPage(this.value)" class="w-16 text-center text-sm font-bold bg-slate-700 text-white rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-cyan-500 border border-slate-600">
+        </div>
+        <button onclick="addTilawaPage(1)" class="px-3 py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1">
+            <i class="fa-solid fa-check"></i> سجلها بوردك
+        </button>
+    </div>
+
+    <!-- Text-based Quran Viewer Container -->
+    <div class="flex-1 w-full max-w-2xl bg-[#fcfbf7] dark:bg-[#151b26] rounded-2xl border border-slate-200 dark:border-slate-800 overflow-y-auto custom-scrollbar relative p-4 md:p-8 flex flex-col justify-start">
+        <div id="mushaf-loader" class="absolute inset-0 flex items-center justify-center bg-[#fcfbf7] dark:bg-[#151b26] z-10 hidden">
+            <i class="fa-solid fa-spinner fa-spin text-4xl text-cyan-500"></i>
+        </div>
+        <!-- هنا سيتم حقن نص صفحة القرآن الكريم تلقائياً -->
+        <div id="mushaf-text-container" class="w-full select-none"></div>
+    </div>
+
+    <!-- Footer Controls -->
+    <div class="w-full max-w-2xl flex justify-between items-center bg-slate-800/50 border border-slate-700 p-3 rounded-2xl mt-2 shrink-0" dir="ltr">
+        <button onclick="changeMushafPage(currentMushafPage + 1)" class="px-5 py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold flex items-center gap-2 transition-colors">
+            التالي <i class="fa-solid fa-arrow-right"></i>
+        </button>
+        <button onclick="changeMushafPage(currentMushafPage - 1)" class="px-5 py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold flex items-center gap-2 transition-colors">
+            <i class="fa-solid fa-arrow-left"></i> السابق
+        </button>
+    </div>
+</div>
     <!-- App Footer -->
     <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400 transition-all duration-300 mt-12">
         <p class="font-bold text-slate-700 dark:text-slate-300">HMS DAILY TASK © 2026</p>
@@ -2251,14 +2313,13 @@
                     targetTab.classList.remove('hidden');
                 }
                 
-                if (window.innerWidth < 1024) {
-                    const sidebar = document.getElementById('app-sidebar');
-                    const backdrop = document.getElementById('sidebar-backdrop');
-                    if (sidebar && !sidebar.classList.contains('translate-x-full')) {
-                        sidebar.classList.add('translate-x-full');
-                        if(backdrop) backdrop.classList.add('hidden');
-                        document.body.style.overflow = '';
-                    }
+                // إغلاق القائمة الجانبية تلقائياً بعد اختيار أي مسار لكافة الشاشات (كمبيوتر وموبايل)
+                const sidebar = document.getElementById('app-sidebar');
+                const backdrop = document.getElementById('sidebar-backdrop');
+                if (sidebar && !sidebar.classList.contains('translate-x-full')) {
+                    sidebar.classList.add('translate-x-full');
+                    if(backdrop) backdrop.classList.add('hidden');
+                    document.body.style.overflow = '';
                 }
             });
         }
@@ -4460,6 +4521,18 @@
 
             if(todEl) todEl.innerText = today;
             if(dBarEl) dBarEl.style.width = dailyPercent + '%';
+
+            // التحقق من حالة تحميل المصحف النصي لتعديل حالة الزر بالواجهة تلقائياً
+            localforage.getItem('offline_mushaf_text').then(data => {
+                const btn = document.getElementById('btn-download-mushaf');
+                if (btn) {
+                    if (data) {
+                        btn.innerHTML = `<i class="fa-solid fa-check text-emerald-500"></i> المصحف محمل وجاهز (أوفلاين)`;
+                    } else {
+                        btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-down"></i> تحميل المصحف للأوفلاين`;
+                    }
+                }
+            });
         }
 
         function addTilawaPage(count) {
@@ -5423,6 +5496,173 @@
             }
         }
         // --- END MOBILE MENU LOGIC ---
+        // ==========================================
+        // TEXT-BASED OFFLINE MUSHAF SYSTEM (نظام المصحف النصي)
+        // ==========================================
+        let currentMushafPage = 1;
+
+        function openOfflineMushaf() {
+            const modal = document.getElementById('mushaf-viewer-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            
+            let startPage = 1;
+            if (state.tilawa && state.tilawa.currentPage) {
+                startPage = state.tilawa.currentPage + 1;
+                if (startPage > 604) startPage = 1;
+            }
+            changeMushafPage(startPage);
+        }
+
+        function closeOfflineMushaf() {
+            const modal = document.getElementById('mushaf-viewer-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+
+        async function changeMushafPage(pageNumber) {
+            let page = parseInt(pageNumber);
+            if (isNaN(page) || page < 1) page = 1;
+            if (page > 604) page = 604;
+            
+            currentMushafPage = page;
+            document.getElementById('mushaf-page-input').value = page;
+            
+            const loader = document.getElementById('mushaf-loader');
+            const container = document.getElementById('mushaf-text-container');
+            
+            loader.classList.remove('hidden');
+            
+            try {
+                // جلب كود القرآن الكريم المحفوظ محلياً في الـ IndexedDB
+                const quranData = await localforage.getItem('offline_mushaf_text');
+                
+                if (!quranData) {
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center justify-center text-center p-6 py-12 text-slate-500">
+                            <i class="fa-solid fa-cloud-arrow-down text-5xl text-cyan-500 mb-4"></i>
+                            <h4 class="font-bold text-lg text-slate-800 dark:text-white mb-2">المصحف غير محمل على جهازك</h4>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm">يرجى إغلاق هذه النافذة والضغط على زر "تحميل المصحف للأوفلاين" بالخارج ليتم حفظ القرآن كاملاً (1.8 ميجا فقط) ليعمل بدون إنترنت مدى الحياة.</p>
+                        </div>`;
+                    loader.classList.add('hidden');
+                    return;
+                }
+
+                // فلترة وتجميع آيات الصفحة المحددة من قاعدة البيانات
+                let pageAyahs = [];
+                quranData.data.surahs.forEach(surah => {
+                    surah.ayahs.forEach(ayah => {
+                        if (ayah.page === page) {
+                            pageAyahs.push({
+                                ...ayah,
+                                surahName: surah.name,
+                                surahNumber: surah.number
+                            });
+                        }
+                    });
+                });
+
+                // بناء نص الصفحة برمجياً بالكامل
+                let html = '';
+                let lastSurahNumber = null;
+
+                pageAyahs.forEach(ayah => {
+                    // إذا بدأت سورة جديدة في الصفحة، نعرض بروازاً يحمل اسمها
+                    if (lastSurahNumber !== ayah.surahNumber) {
+                        lastSurahNumber = ayah.surahNumber;
+                        html += `
+                            <div class="my-6 text-center select-none block">
+                                <div class="inline-block border-2 border-amber-500/30 bg-amber-50/70 dark:bg-amber-950/20 px-8 py-2 rounded-2xl">
+                                    <span class="font-black text-amber-700 dark:text-amber-400 text-lg md:text-xl font-cairo">💠 ${ayah.surahName} 💠</span>
+                                </div>
+                            </div>
+                        `;
+                        // عرض البسملة لجميع السور عدا التوبة والفاتحة
+                        if (ayah.numberInSurah === 1 && ayah.surahNumber !== 9 && ayah.surahNumber !== 1) {
+                            html += `<p class="text-center font-bold text-slate-800 dark:text-slate-200 text-xl my-6 select-none font-cairo">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>`;
+                        }
+                    }
+
+                    // تنظيف النص لتجنب تكرار البسملة المدمجة ببعض السور من المصدر
+                    let ayahText = ayah.text;
+                    if (ayah.numberInSurah === 1 && ayah.surahNumber !== 1 && ayah.surahNumber !== 9) {
+                        ayahText = ayahText.replace("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ", "");
+                        ayahText = ayahText.replace("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", "");
+                    }
+
+                    // دمج نص الآية مع رقمها العثماني الأنيق واعتماد الخط المخصص
+                    html += `
+                        <span class="inline text-slate-900 dark:text-slate-100 tracking-wide transition-all">
+                            ${ayahText}
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-amber-500/30 text-xs font-bold text-amber-600 dark:text-amber-400 mx-1 select-none font-cairo bg-amber-500/5">${ayah.numberInSurah}</span>
+                        </span>
+                    `;
+                });
+
+                container.innerHTML = `<div class="text-right leading-loose" dir="rtl">${html}</div>`;
+                
+            } catch (err) {
+                console.error("فشل معالجة الصفحة:", err);
+                container.innerHTML = `<p class="text-center text-rose-500 p-6">حدث خطأ أثناء تحميل بيانات الصفحة، يرجى إعادة المحاولة.</p>`;
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        // دالة تحميل وحفظ ملف القرآن كاملاً ليعمل أوفلاين (حجم 1.8 ميجا فقط)
+        async function downloadFullMushaf() {
+            if (!navigator.onLine) {
+                showToast("لا يوجد اتصال 📶", "يجب أن تكون متصلاً بالإنترنت لتحميل المصحف أول مرة.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-download-mushaf');
+            const progressContainer = document.getElementById('mushaf-progress-container');
+            const progressBar = document.getElementById('mushaf-progress-bar');
+            const progressText = document.getElementById('mushaf-progress-text');
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري الاتصال...`;
+            progressContainer.classList.remove('hidden');
+            progressText.classList.remove('hidden');
+
+            progressBar.style.width = `30%`;
+            progressText.innerText = `جاري استيراد البيانات (1.8 ميجا)...`;
+
+            try {
+                // استدعاء واجهة برمجة تطبيقات القرآن بالرسم العثماني (Uthmani Quran API)
+                const response = await fetch('https://api.alquran.cloud/v1/quran/quran-uthmani');
+                
+                if (!response.ok) throw new Error("فشل الاستجابة من السيرفر");
+
+                progressBar.style.width = `70%`;
+                progressText.innerText = `جاري معالجة وتثبيت النصوص محلياً...`;
+
+                const quranJSON = await response.json();
+
+                // حفظ الملف بالكامل في IndexedDB ليعمل مدى الحياة أوفلاين
+                await localforage.setItem('offline_mushaf_text', quranJSON);
+
+                progressBar.style.width = `100%`;
+                progressText.innerText = `اكتمل التحميل بنجاح!`;
+                showToast("تم الحفظ بنجاح! ✅", "القرآن الكريم متوفر الآن للعمل بدون إنترنت مدى الحياة بحجم 1.8 ميجابايت.");
+                
+                btn.innerHTML = `<i class="fa-solid fa-check text-emerald-500"></i> تم تحميل المصحف`;
+                
+                // تحديث واجهة مسار التلاوة
+                renderTilawaTab();
+
+            } catch (error) {
+                console.error("فشل تنزيل المصحف:", error);
+                showToast("حدث خطأ ⚠️", "تعذر جلب البيانات. تأكد من جودة الإنترنت وحاول مجدداً.");
+                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-down"></i> إعادة المحاولة`;
+                btn.disabled = false;
+                progressContainer.classList.add('hidden');
+                progressText.classList.add('hidden');
+            }
+        }
         window.onload = function() {
             initApp();
             setTimeout(() => {
@@ -5471,6 +5711,7 @@
                 window.location.href, // الصفحة الحالية
                 'https://cdn.tailwindcss.com',
                 'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap',
+                'https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap',
                 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
                 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js',
                 'https://cdn.jsdelivr.net/npm/chart.js'
