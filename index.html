@@ -6061,31 +6061,55 @@ window.addEventListener('appinstalled', () => {
         auth.onAuthStateChanged((user) => {
             if (user) {
                 currentUser = user;
-                // الاعتماد على الذاكرة المحلية أولاً لسرعة الهاتف
-                const localName = localStorage.getItem('hms_user_name');
-                const localGender = localStorage.getItem('hms_user_gender');
                 
-                if (localName && localGender) {
-                    userName = localName;
-                    userGender = localGender;
-                    updateSectionTitleUI();
-                    loadPublicGroups();
-                    checkUrlForInvite();
-                } else {
-                    // جلب من السيرفر كخطة بديلة إذا تم مسح ذاكرة الهاتف
-                    db.ref(`users/${currentUser.uid}`).once('value').then((snapshot) => {
-                        if (snapshot.exists()) {
-                            const userData = snapshot.val();
-                            userName = userData.name;
-                            userGender = userData.gender;
-                            localStorage.setItem('hms_user_name', userName);
-                            localStorage.setItem('hms_user_gender', userGender);
-                            updateSectionTitleUI();
-                            loadPublicGroups();
-                            checkUrlForInvite();
+                // جلب بيانات المستخدم من السيرفر أولاً للتأكد من مطابقة الـ UID بقواعد الأمان
+                db.ref(`users/${currentUser.uid}`).once('value').then((snapshot) => {
+                    if (snapshot.exists()) {
+                        // الحالة 1: المستخدم مسجل في السيرفر ومطابق لقواعد الأمان
+                        const userData = snapshot.val();
+                        userName = userData.name;
+                        userGender = userData.gender;
+                        
+                        localStorage.setItem('hms_user_name', userName);
+                        localStorage.setItem('hms_user_gender', userGender);
+                        
+                        updateSectionTitleUI();
+                        loadPublicGroups();
+                        checkUrlForInvite();
+                    } else {
+                        // الحالة 2: الـ UID تجدد على الهاتف والسيرفر لا يعرفه ولكن الذاكرة المحلية تحتفظ بالبيانات
+                        const localName = localStorage.getItem('hms_user_name');
+                        const localGender = localStorage.getItem('hms_user_gender');
+                        
+                        if (localName && localGender) {
+                            // مزامنة وإعادة تسجيل الحساب الجديد في السيرفر تلقائياً لتخطي جدار الرولز الأمني
+                            userName = localName;
+                            userGender = localGender;
+                            
+                            db.ref(`users/${currentUser.uid}`).set({
+                                name: userName,
+                                gender: userGender,
+                                createdAt: firebase.database.ServerValue.TIMESTAMP
+                            }).then(() => {
+                                updateSectionTitleUI();
+                                loadPublicGroups();
+                                checkUrlForInvite();
+                            });
+                        } else {
+                            // الحالة 3: مستخدم جديد كلياً، ننتظر ضغطه على التبويب ليفتح نافذة التسجيل
                         }
-                    });
-                }
+                    }
+                }).catch(err => {
+                    console.error("خطأ مزامنة الحساب المجهول:", err);
+                    // في حال انقطاع الإنترنت التام، نعتمد على البيانات المحلية مؤقتاً لفتح الواجهة
+                    const localName = localStorage.getItem('hms_user_name');
+                    const localGender = localStorage.getItem('hms_user_gender');
+                    if (localName && localGender) {
+                        userName = localName;
+                        userGender = localGender;
+                        updateSectionTitleUI();
+                    }
+                });
             }
         });
 
