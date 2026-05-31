@@ -22,6 +22,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- localForage for unlimited IndexedDB storage -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    <!-- مكتبات Firebase للعمل المباشر -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -233,73 +237,71 @@
             <!-- Navigation Cards -->
             <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm shrink-0">
                 <nav class="flex flex-col gap-1 pb-2 lg:pb-0" id="main-nav">
-                    <button data-tab="schedule" class="nav-btn active flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm whitespace-nowrap transition-all w-full text-right text-brand-700 bg-brand-50 dark:text-brand-300 dark:bg-brand-950/30">
-                        <i class="fa-solid fa-clock-rotate-left text-base"></i>
-                        <span>الجدول الزمني لليوم</span>
-                    </button>
-                    <!-- NEW: Quran Path Tab -->
-                    <button data-tab="quran" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
-                        <i class="fa-solid fa-book-open-reader text-base text-emerald-500"></i>
-                        <span>مسار القرآن الكريم</span>
-                    </button>
-                    <!-- NEW: Tilawa Path Tab -->
-                    <!-- NEW: Athkar Path Tab -->
-<button data-tab="athkar" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
-    <i class="fa-solid fa-hands-praying text-base text-rose-500"></i>
-    <span>مسار الأذكار والتسبيح</span>
-</button>
-<button data-tab="tilawa" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
-    <i class="fa-solid fa-book-quran text-base text-cyan-500"></i>
-    <span>ورد التلاوة والختمة</span>
-</button>
-<!-- NEW: مسار المذاكرة الاحترافي -->
-                    <button data-tab="study" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
-                        <i class="fa-solid fa-book-open text-base text-indigo-500"></i>
-                        <span>مسار المذاكرة العميق</span>
-                    </button>
-                    <button data-tab="english" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
-                        <i class="fa-solid fa-language text-base"></i>
-                        <span>مسار اللغة الإنجليزية</span>
-                    </button>
-                    <button data-tab="skills" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
-                        <i class="fa-solid fa-graduation-cap text-base"></i>
-                        <span>المهارات والدورات</span>
-                    </button>
-                    <!-- مسار المهام الحرة المتفرعة -->
-                    <button data-tab="todo" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
-                        <i class="fa-solid fa-list-check text-base text-sky-500"></i>
-                        <span>المهام الحرة (To-Do)</span>
-                    </button>
-                    <!-- NEW: مسار سجل درجات الاختبارات -->
-                    <button data-tab="exams" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
-                        <i class="fa-solid fa-ranking-star text-base text-fuchsia-500"></i>
-                        <span>سجل درجات الاختبارات</span>
-                    </button>
-                    <!-- NEW: مسار الرسائل المحفوظة (المسودة) -->
-                    <button data-tab="notes" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
-                        <i class="fa-solid fa-bookmark text-base text-indigo-500"></i>
-                        <span>الرسائل المحفوظة (مسودة)</span>
-                    </button>
-                    <button data-tab="timer" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
-                        <i class="fa-solid fa-stopwatch text-base"></i>
-                        <span>مؤقت التركيز</span>
-                    </button>
-                    <div class="h-px bg-slate-200 dark:bg-slate-800 my-1 hidden lg:block"></div>
-                    <!-- NEW: Spaced Repetition Tab -->
-<button data-tab="spaced" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
-    <i class="fa-solid fa-brain text-base text-violet-500"></i>
-    <span>المراجعة الذكية (Spaced Repetition)</span>
-</button>
-<!-- NEW: Retrospective Timetable Tab -->
-<button data-tab="retro" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
-    <i class="fa-solid fa-table-list text-base text-indigo-500"></i>
-    <span>جدول المراجعة العكسي</span>
-</button>
-                    <button data-tab="calendar" onclick="renderCalendarAndStats()" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
-                        <i class="fa-solid fa-chart-pie text-base"></i>
-                        <span>التقويم والإحصائيات</span>
-                    </button>
-                </nav>
+    <button data-tab="schedule" class="nav-btn active flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm whitespace-nowrap transition-all w-full text-right text-brand-700 bg-brand-50 dark:text-brand-300 dark:bg-brand-950/30">
+        <i class="fa-solid fa-clock-rotate-left text-base"></i>
+        <span>الجدول الزمني لليوم</span>
+    </button>
+    <button data-tab="quran" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
+        <i class="fa-solid fa-book-open-reader text-base text-emerald-500"></i>
+        <span>مسار القرآن الكريم</span>
+    </button>
+    <button data-tab="athkar" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
+        <i class="fa-solid fa-hands-praying text-base text-rose-500"></i>
+        <span>مسار الأذكار والتسبيح</span>
+    </button>
+    <button data-tab="tilawa" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
+        <i class="fa-solid fa-book-quran text-base text-cyan-500"></i>
+        <span>ورد التلاوة والختمة</span>
+    </button>
+    <button data-tab="study" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
+        <i class="fa-solid fa-book-open text-base text-indigo-500"></i>
+        <span>مسار المذاكرة العميق</span>
+    </button>
+    
+    <!-- الزر المفقود: المذاكرة الجماعية -->
+    <button data-tab="groups" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
+        <i class="fa-solid fa-users-rays text-base text-blue-500"></i>
+        <span>المذاكرة الجماعية (Groups)</span>
+    </button>
+
+    <button data-tab="english" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
+        <i class="fa-solid fa-language text-base"></i>
+        <span>مسار اللغة الإنجليزية</span>
+    </button>
+    <button data-tab="skills" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
+        <i class="fa-solid fa-graduation-cap text-base"></i>
+        <span>المهارات والدورات</span>
+    </button>
+    <button data-tab="todo" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
+        <i class="fa-solid fa-list-check text-base text-sky-500"></i>
+        <span>المهام الحرة (To-Do)</span>
+    </button>
+    <button data-tab="exams" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
+        <i class="fa-solid fa-ranking-star text-base text-fuchsia-500"></i>
+        <span>سجل درجات الاختبارات</span>
+    </button>
+    <button data-tab="notes" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
+        <i class="fa-solid fa-bookmark text-base text-indigo-500"></i>
+        <span>الرسائل المحفوظة (مسودة)</span>
+    </button>
+    <button data-tab="timer" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
+        <i class="fa-solid fa-stopwatch text-base"></i>
+        <span>مؤقت التركيز</span>
+    </button>
+    <div class="h-px bg-slate-200 dark:bg-slate-800 my-1 hidden lg:block"></div>
+    <button data-tab="spaced" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
+        <i class="fa-solid fa-brain text-base text-violet-500"></i>
+        <span>المراجعة الذكية (Spaced Repetition)</span>
+    </button>
+    <button data-tab="retro" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
+        <i class="fa-solid fa-table-list text-base text-indigo-500"></i>
+        <span>جدول المراجعة العكسي</span>
+    </button>
+    <button data-tab="calendar" onclick="renderCalendarAndStats()" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-all w-full text-right">
+        <i class="fa-solid fa-chart-pie text-base"></i>
+        <span>التقويم والإحصائيات</span>
+    </button>
+</nav>
             </div>
 
             <!-- Stats / Motivational Box -->
@@ -950,6 +952,88 @@
         </div>
     </div>
 </div>
+<!-- NEW: Tab Groups (المذاكرة الجماعية) -->
+            <div id="tab-groups" class="tab-content hidden flex flex-col gap-6 h-[calc(100vh-8rem)]">
+                
+                <!-- الشاشة الأولى: قائمة المجموعات -->
+                <div id="groups-list-view" class="flex flex-col gap-6">
+                    <div class="bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-2xl p-6 shadow-sm relative overflow-hidden shrink-0">
+                        <div class="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-x-10 -translate-y-10"></div>
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
+                            <div>
+                                <h2 class="text-xl font-bold mb-2 flex items-center gap-2">
+                                    <i class="fa-solid fa-users-rays"></i> مجتمع المذاكرة (Study Groups)
+                                </h2>
+                                <p class="text-sm text-blue-100 leading-relaxed max-w-2xl">
+                                    المذاكرة مع رفقة صالحة تضاعف التركيز. انضم لمجموعات عامة، أو أنشئ غرفتك الخاصة وادعُ أصدقاءك للمذاكرة التنافسية.
+                                </p>
+                            </div>
+                            <button onclick="createNewStudyGroup()" class="bg-white text-blue-600 hover:bg-blue-50 px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md flex items-center gap-2 whitespace-nowrap">
+                                <i class="fa-solid fa-plus"></i> إنشاء مجموعة
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
+                        <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2 mb-4">
+                            <i class="fa-solid fa-compass text-cyan-500"></i> استكشاف المجموعات العامة
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="public-groups-container">
+                            <!-- سيتم جلب المجموعات من السيرفر هنا -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الشاشة الثانية: داخل المجموعة -->
+                <div id="group-chat-view" class="hidden flex-col h-full gap-4">
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex justify-between items-center shrink-0">
+                        <div class="flex items-center gap-3">
+                            <button onclick="leaveGroup()" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-colors">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 flex items-center justify-center text-white font-bold shadow-sm"><i class="fa-solid fa-users"></i></div>
+                            <div>
+                                <h3 id="active-group-title" class="font-bold text-sm text-slate-900 dark:text-white">اسم المجموعة</h3>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <!-- حاوية أزرار التحكم الخاصة بالمدير فقط -->
+                            <div id="admin-group-controls" class="flex gap-2"></div>
+                            
+                            <button onclick="copyInviteLink()" class="bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 px-3 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors border border-blue-200 dark:border-blue-800/50">
+                                <i class="fa-solid fa-link"></i> رابط الدعوة
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col lg:flex-row gap-4 flex-1 min-h-0">
+                        <!-- الجانب الأيمن: مخصص للدردشة فقط -->
+                        <div class="flex-1 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden relative">
+                            <div id="chat-messages-container" class="w-full h-[400px] lg:h-[550px] overflow-y-auto custom-scrollbar p-4 flex flex-col gap-3 bg-white dark:bg-slate-900"></div>
+                            <!-- شريط كتابة الرسائل فقط -->
+                            <div id="chat-input-container" class="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"></div>
+                        </div>
+
+                        <!-- الجانب الأيسر: المؤقت + المهام + المتصلين -->
+                        <div class="w-full lg:w-[320px] flex flex-col gap-4 shrink-0 overflow-y-auto custom-scrollbar pr-1 pb-4">
+                            <!-- المؤقت -->
+                            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm text-center shrink-0">
+                                <h4 class="font-bold text-xs text-slate-500 dark:text-slate-400 mb-3">المؤقت المشترك</h4>
+                                <div id="group-timer-action-area"></div>
+                            </div>
+
+                            <!-- الحاوية الجديدة المخصصة للمهام فقط -->
+                            <div id="group-tasks-action-area" class="shrink-0 empty:hidden"></div>
+
+                            <!-- المتصلين -->
+                            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm shrink-0 min-h-[150px]">
+                                <h4 class="font-bold text-xs text-slate-500 dark:text-slate-400 mb-3">متصل الآن</h4>
+                                <div id="group-members-list" class="flex flex-col gap-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Tab 2: English Path -->
             <div id="tab-english" class="tab-content hidden flex flex-col gap-6">
@@ -2318,6 +2402,11 @@
                 const btn = e.target.closest('button');
                 if (!btn) return;
                 const tab = btn.dataset.tab;
+
+                // جديد: التحقق إذا كان التبويب هو المذاكرة الجماعية والمستخدم لم يكمل ملفه الشخصي بعد
+                if (tab === 'groups') {
+                    checkGroupProfileAccess();
+                }
                 
                 document.querySelectorAll('.nav-btn').forEach(b => {
                     b.classList.remove('active', 'text-brand-700', 'bg-brand-50', 'dark:text-brand-300', 'dark:bg-brand-950/30', 'font-bold');
@@ -5943,6 +6032,1146 @@ window.addEventListener('appinstalled', () => {
     }
     showToast("تم التثبيت!", "تم تثبيت التطبيق بنجاح على جهازك.");
 });
+// ==========================================
+        // FIREBASE BACKEND: STRICTLY SEPARATED GROUPS (تقني صارم)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCRYDl1Xn-3ffJvFex-3MqXF0mP-Iw25do",
+            authDomain: "hms-daily-task.firebaseapp.com",
+            databaseURL: "https://hms-daily-task-default-rtdb.firebaseio.com",
+            projectId: "hms-daily-task",
+            storageBucket: "hms-daily-task.firebasestorage.app",
+            messagingSenderId: "39371572880",
+            appId: "1:39371572880:web:33d72eb2d3c0b427577a15"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        let currentUser = null;
+        let currentGroupId = null;
+        let userName = '';
+        let userGender = '';
+        let groupTimerInterval = null;
+        let isGroupLocked = false; // لمراقبة حالة إغلاق المجموعة
+        let activeRoomFocusSeconds = 0; // عداد داخلي بالثواني الحقيقية لحساب وقت المذاكرة الفعلي دون الاعتماد على ساعة الهاتف
+        
+        auth.signInAnonymously().catch((error) => console.error("Auth Error:", error));
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                // جلب بيانات المستخدم من السيرفر للتأكد من هويته الحقيقية
+                db.ref(`users/${currentUser.uid}`).once('value').then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const userData = snapshot.val();
+                        userName = userData.name;
+                        userGender = userData.gender; // 'male' or 'female'
+                        
+                        updateSectionTitleUI();
+                        loadPublicGroups();
+                        checkUrlForInvite();
+                    }
+                }).catch(err => console.error("فشل جلب البيانات:", err));
+            }
+        });
+
+        // دالة حفظ ملف المستخدم في السيرفر (نهائي ولا يمكن تغييره)
+        function saveUserProfile() {
+            const nameInput = document.getElementById('setup-username').value.trim();
+            const genderInput = document.querySelector('input[name="setup-gender"]:checked');
+
+            if (!nameInput) { alert("يرجى كتابة اسمك!"); return; }
+            if (!genderInput) { alert("يرجى اختيار القسم (شباب أو بنات)!"); return; }
+
+            // الحفظ في قاعدة البيانات
+            db.ref(`users/${currentUser.uid}`).set({
+                name: nameInput,
+                gender: genderInput.value,
+                createdAt: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                userName = nameInput;
+                userGender = genderInput.value;
+                document.getElementById('profile-setup-modal').classList.add('hidden');
+                document.getElementById('profile-setup-modal').classList.remove('flex');
+                
+                updateSectionTitleUI();
+                loadPublicGroups();
+                showToast("نجاح!", "تم تسجيل دخولك للمجتمع بنجاح.");
+            }).catch(() => {
+                alert("حدث خطأ في التسجيل، تأكد من اتصالك بالإنترنت.");
+            });
+        }
+        // وظيفة التحقق من وجود الملف الشخصي عند محاولة فتح المذاكرة الجماعية
+        function checkGroupProfileAccess() {
+            if (!currentUser) return;
+            db.ref(`users/${currentUser.uid}`).once('value').then((snapshot) => {
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    userName = userData.name;
+                    userGender = userData.gender;
+                    updateSectionTitleUI();
+                    loadPublicGroups();
+                } else {
+                    // إذا لم يكن مسجلاً بالسيرفر، تظهر له نافذة الإعداد الآن
+                    document.getElementById('profile-setup-modal').classList.remove('hidden');
+                    document.getElementById('profile-setup-modal').classList.add('flex');
+                }
+            }).catch(err => console.error("خطأ في التحقق من الملف الشخصي:", err));
+        }
+
+        function updateSectionTitleUI() {
+            const titleEl = document.querySelector('#groups-list-view h2');
+            if (titleEl) {
+                const sectionName = userGender === 'male' ? 'قسم الشباب' : 'قسم البنات';
+                titleEl.innerHTML = `<i class="fa-solid fa-users-rays"></i> مجتمع المذاكرة (${sectionName})`;
+            }
+        }
+
+        function createNewStudyGroup() {
+            if (!currentUser || !userGender) return;
+            const groupName = prompt("أدخل اسم المجموعة الجديدة:");
+            if (!groupName || groupName.trim() === "") return;
+
+            // إنشاء المجموعة داخل القسم الخاص بالمستخدم فقط
+            const newGroupRef = db.ref(`groups/${userGender}`).push();
+            const groupKey = newGroupRef.key;
+            newGroupRef.set({
+                info: { 
+                    name: groupName.trim(), 
+                    creatorUid: currentUser.uid, 
+                    createdAt: firebase.database.ServerValue.TIMESTAMP 
+                },
+                admins: {
+                    [currentUser.uid]: true // ترقية منشئ المجموعة كمسؤول أول تلقائياً
+                }
+            }).then(() => {
+                joinGroup(groupKey, groupName.trim());
+                showToast("تم الإنشاء!", "تم إنشاء الغرفة بنجاح.");
+            });
+        }
+
+        function loadPublicGroups() {
+            const container = document.getElementById('public-groups-container');
+            if(!container || !userGender) return;
+
+            // السيرفر سيعطيه فقط مجموعات قسمه بفضل الـ Rules
+            db.ref(`groups/${userGender}`).on('value', (snapshot) => {
+                container.innerHTML = '';
+                const groups = snapshot.val();
+                
+                if (!groups) {
+                    container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl col-span-full">لا توجد مجموعات متاحة في قسمك حالياً. كُن أول من ينشئ مجموعة!</p>';
+                    return;
+                }
+
+                Object.keys(groups).forEach(groupId => {
+                    const group = groups[groupId];
+                    
+                    // ⏱️ فحص التدمير الذاتي: إذا مر على إنشاء المجموعة أكثر من 7 ساعات (25,200,000 مللي ثانية)
+                    const ageInMs = Date.now() - group.info.createdAt;
+                    if (ageInMs > 25200000) {
+                        db.ref(`groups/${userGender}/${groupId}`).remove(); // حذفها نهائياً من السيرفر
+                        return; // تخطي عرضها في القائمة
+                    }
+
+                    const memCount = group.members ? Object.keys(group.members).length : 0;
+                    const iconColor = userGender === 'male' ? 'text-blue-600 bg-blue-100 dark:bg-blue-900/30' : 'text-rose-600 bg-rose-100 dark:bg-rose-900/30';
+                    const btnColor = userGender === 'male' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-rose-500 hover:bg-rose-600';
+
+                    container.innerHTML += `
+                        <div class="border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl p-3 flex justify-between items-center transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg ${iconColor}"><i class="fa-solid fa-users"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 dark:text-slate-200 text-xs">${group.info.name}</h4>
+                                    <p class="text-[9px] text-slate-500">${memCount} متصل الآن</p>
+                                </div>
+                            </div>
+                            <button onclick="joinGroup('${groupId}', '${group.info.name}')" class="${btnColor} text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm">انضمام</button>
+                        </div>
+                    `;
+                });
+            }, (error) => {
+                console.error("فشل جلب الغرف (تم الرفض بواسطة السيرفر):", error);
+            });
+        }
+
+        function checkUrlForInvite() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const joinId = urlParams.get('join');
+            const targetGender = urlParams.get('g'); // جلب قسم المجموعة من الرابط
+
+            if (joinId && targetGender) {
+                // حماية رقم 1: فحص من داخل المتصفح
+                if (targetGender !== userGender) {
+                    alert("🚫 حماية الخصوصية: هذا الرابط مخصص للقسم الآخر ولا يُسمح لك بالدخول.");
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    return;
+                }
+
+                // حماية رقم 2: فحص من السيرفر (السيرفر سيرفض لو حاول الكذب)
+                db.ref(`groups/${userGender}/${joinId}/info/name`).once('value').then((s) => {
+                    if (s.exists()) {
+                        document.querySelector('[data-tab="groups"]').click();
+                        joinGroup(joinId, s.val());
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                }).catch(() => {
+                    alert("🚫 خطأ: ليس لديك صلاحية للدخول، أو أن الغرفة قد حُذفت.");
+                });
+            }
+        }
+
+        let isGroupAdmin = false; // متغير لمعرفة هل المستخدم الحالي هو مدير الغرفة
+
+        function joinGroup(groupId, groupName) {
+            // 1. التحقق من حالة إغلاق الغرفة أولاً قبل السماح بأي إجراء
+            db.ref(`groups/${userGender}/${groupId}`).once('value').then((snapshot) => {
+                const groupData = snapshot.val();
+                if (!groupData) {
+                    showToast("تنبيه", "عفواً، هذه المجموعة غير موجودة أو تم حذفها.");
+                    return;
+                }
+
+                const isLocked = groupData.info && groupData.info.locked === true;
+                const isMember = groupData.members && groupData.members[currentUser.uid];
+                const isAdmin = groupData.admins && groupData.admins[currentUser.uid];
+                const isCreator = groupData.info && groupData.info.creatorUid === currentUser.uid;
+
+                // حماية الخصوصية: إذا كانت المجموعة مغلقة والمستخدم ليس عضواً حالياً وليس مسؤولاً/منشئاً
+                if (isLocked && !isMember && !isAdmin && !isCreator) {
+                    alert("🚫 هذه المجموعة مغلقة حالياً بواسطة المشرف ولا يمكن الانضمام إليها.");
+                    return;
+                }
+
+                // 2. إذا اجتاز الفحص، يتم الدخول وتجهيز الواجهة بشكل طبيعي
+                currentGroupId = groupId;
+                document.getElementById('groups-list-view').classList.add('hidden');
+                const chatView = document.getElementById('group-chat-view');
+                chatView.classList.remove('hidden');
+                chatView.classList.add('flex');
+                document.getElementById('active-group-title').innerText = groupName;
+                document.getElementById('chat-messages-container').innerHTML = '';
+                
+                // تحديث وبناء منطقة الدردشة والمهام فور الدخول
+                renderChatInputArea();
+
+                // التحقق من صلاحية المسؤول بالوقت الفعلي
+                db.ref(`groups/${userGender}/${groupId}/admins/${currentUser.uid}`).on('value', (adminSnap) => {
+                    const isAdminInList = adminSnap.val() === true;
+                    isGroupAdmin = isAdminInList || isCreator;
+                    
+                    db.ref(`groups/${userGender}/${groupId}/timer`).once('value').then((timerSnap) => {
+                        renderAdminControlsUI(timerSnap.exists(), timerSnap.exists() ? timerSnap.val().type : 'study');
+                    });
+                });
+
+                // الاستماع لحالة قفل الغرفة وتحديث واجهة التحكم بالوقت الفعلي
+                db.ref(`groups/${userGender}/${groupId}/info/locked`).on('value', (lockSnap) => {
+                    isGroupLocked = lockSnap.val() === true;
+                    db.ref(`groups/${userGender}/${groupId}/timer`).once('value').then((timerSnap) => {
+                        renderAdminControlsUI(timerSnap.exists(), timerSnap.exists() ? timerSnap.val().type : 'study');
+                    });
+                });
+
+                // مراقبة ما إذا تم حذف المجموعة أو انتهى وقتها لإخراج الأعضاء فوراً لصفحة الاستكشاف
+                db.ref(`groups/${userGender}/${groupId}/info`).on('value', (snapshot) => {
+                    if (!snapshot.exists() && currentGroupId === groupId) {
+                        alert("⚠️ تم إغلاق وحذف هذه المجموعة تلقائياً (لانقضاء صلاحية الـ 5 ساعات أو بطلب من المدير).");
+                        leaveGroup();
+                    }
+                });
+
+                // مراقبة ما إذا تم طرد العضو الحالي لإخراجه فوراً
+                db.ref(`groups/${userGender}/${groupId}/kicked/${currentUser.uid}`).on('value', (snapshot) => {
+                    if (snapshot.exists() && snapshot.val() === true) {
+                        alert("🚫 لقد تم طردك وحظرك من هذه المجموعة بواسطة المدير.");
+                        db.ref(`groups/${userGender}/${groupId}/kicked/${currentUser.uid}`).off();
+                        leaveGroup();
+                    }
+                });
+
+                const myStatusRef = db.ref(`groups/${userGender}/${groupId}/members/${currentUser.uid}`);
+                myStatusRef.set({ name: userName, status: 'متصل 🟢' });
+                myStatusRef.onDisconnect().remove();
+
+                listenToGroupChat();
+                listenToGroupMembers();
+                listenToGroupTimer();
+            }).catch(err => {
+                console.error("خطأ أثناء محاولة الانضمام للغرفة:", err);
+                showToast("خطأ", "حدث خطأ أثناء محاولة الاتصال بالغرفة.");
+            });
+        }
+
+        function leaveGroup() {
+            if (currentGroupId && currentUser) {
+                // إغلاق مستمعات الأحداث الإضافية
+                db.ref(`groups/${userGender}/${currentGroupId}/info/locked`).off(); // إلغاء مراقبة القفل
+                db.ref(`groups/${userGender}/${currentGroupId}/info`).off();
+                db.ref(`groups/${userGender}/${currentGroupId}/kicked/${currentUser.uid}`).off();
+                db.ref(`groups/${userGender}/${currentGroupId}/admins/${currentUser.uid}`).off();
+                db.ref(`groups/${userGender}/${currentGroupId}/admins`).off();
+
+                db.ref(`groups/${userGender}/${currentGroupId}/members/${currentUser.uid}`).remove();
+                db.ref(`groups/${userGender}/${currentGroupId}/chat`).off();
+                db.ref(`groups/${userGender}/${currentGroupId}/members`).off();
+                db.ref(`groups/${userGender}/${currentGroupId}/timer`).off();
+            }
+            if(groupTimerInterval) clearInterval(groupTimerInterval);
+            currentGroupId = null;
+            isGroupAdmin = false;
+            isGroupLocked = false; // إعادة تعيين حالة القفل
+            document.getElementById('admin-group-controls').innerHTML = '';
+            document.getElementById('group-timer-action-area').innerHTML = '';
+            document.getElementById('group-chat-view').classList.add('hidden');
+            document.getElementById('group-chat-view').classList.remove('flex');
+            document.getElementById('groups-list-view').classList.remove('hidden');
+            const oldTimer = document.getElementById('live-group-timer-ui');
+            if(oldTimer) oldTimer.remove();
+            // تنظيف شريط المدخلات
+            document.getElementById('chat-input-container').innerHTML = '';
+        }
+
+        function sendGroupMessage() {
+            const input = document.getElementById('chat-input-msg');
+            const text = input.value.trim();
+            if (!text || !currentGroupId) return;
+
+            let msgsLeft = parseInt(localStorage.getItem('hms_chat_unlocked_msgs') || '0');
+            if (msgsLeft <= 0) return;
+
+            // حماية الجلسة: فحص ما إذا كنا داخل جلسة بومودورو ومنع إرسال أكثر من 5 رسائل
+            const activeTimerEnd = localStorage.getItem('hms_active_timer_end');
+            if (activeTimerEnd) {
+                let sessionMsgs = JSON.parse(localStorage.getItem('hms_session_msgs') || '{}');
+                // تصفير العداد إذا كانت هذه جلسة بومودورو جديدة
+                if (sessionMsgs.timerEnd !== activeTimerEnd) {
+                    sessionMsgs = { timerEnd: activeTimerEnd, count: 0 };
+                }
+                // المنع إذا تخطى 5 رسائل
+                if (sessionMsgs.count >= 5) {
+                    showToast("تنبيه 🛑", "لقد استهلكت الحد الأقصى (5 رسائل) المسموح بها أثناء جلسة التركيز الحالية. ركز في مذاكرتك!");
+                    return; 
+                }
+                sessionMsgs.count++;
+                localStorage.setItem('hms_session_msgs', JSON.stringify(sessionMsgs));
+            }
+
+            db.ref(`groups/${userGender}/${currentGroupId}/chat`).push({
+                senderId: currentUser.uid,
+                senderName: userName,
+                text: text,
+                timestamp: Date.now()
+            }).then(() => {
+                msgsLeft = Math.max(0, msgsLeft - 1);
+                localStorage.setItem('hms_chat_unlocked_msgs', msgsLeft);
+                renderChatInputArea();
+            });
+
+            input.value = '';
+        }
+
+        function listenToGroupChat() {
+            const chatContainer = document.getElementById('chat-messages-container');
+            chatContainer.innerHTML = '<p class="text-[10px] text-slate-400 text-center py-2">مرحباً بك في الغرفة! الدردشة مباشرة.</p>';
+
+            db.ref(`groups/${userGender}/${currentGroupId}/chat`).limitToLast(50).on('child_added', (snapshot) => {
+                const msg = snapshot.val();
+                msg.text = msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                if(!msg) return;
+
+                const timeStr = new Date(msg.timestamp).toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
+                const isMale = userGender === 'male';
+
+                if (msg.senderId === 'system') {
+                    chatContainer.innerHTML += `<div class="text-center text-[10px] text-slate-500 font-bold bg-slate-100 dark:bg-slate-800 w-max mx-auto px-3 py-1 rounded-full my-2">${msg.text}</div>`;
+                } else if (msg.senderId === currentUser.uid) {
+                    const myColor = isMale ? 'bg-blue-500' : 'bg-rose-500';
+                    chatContainer.innerHTML += `
+                        <div class="flex gap-2 items-end justify-end">
+                            <span class="text-[8px] text-slate-400">${timeStr}</span>
+                            <div class="${myColor} text-white p-2.5 rounded-2xl rounded-bl-sm shadow-sm max-w-[80%]">
+                                <p class="text-xs font-medium leading-relaxed">${msg.text}</p>
+                            </div>
+                        </div>`;
+                } else {
+                    playBeep("success");
+                    const theirColor = isMale ? 'text-blue-500' : 'text-rose-500';
+                    chatContainer.innerHTML += `
+                        <div class="flex gap-2 items-end justify-start">
+                            <div class="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[10px] font-bold shrink-0">${msg.senderName.charAt(0)}</div>
+                            <div class="bg-white dark:bg-slate-800 p-2.5 rounded-2xl rounded-br-sm shadow-sm border border-slate-100 dark:border-slate-700 max-w-[80%]">
+                                <p class="text-[9px] font-bold ${theirColor} mb-0.5">${msg.senderName}</p>
+                                <p class="text-xs text-slate-700 dark:text-slate-200 font-medium leading-relaxed">${msg.text}</p>
+                            </div>
+                            <span class="text-[8px] text-slate-400">${timeStr}</span>
+                        </div>`;
+                }
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            });
+        }
+
+        function listenToGroupMembers() {
+            const listContainer = document.getElementById('group-members-list');
+            if(!listContainer) return;
+
+            // الاستماع لقائمة المسؤولين وقائمة الأعضاء معاً لتحديث الواجهة فوراً
+            db.ref(`groups/${userGender}/${currentGroupId}/admins`).on('value', (adminsSnapshot) => {
+                const admins = adminsSnapshot.val() || {};
+                
+                db.ref(`groups/${userGender}/${currentGroupId}/members`).on('value', (membersSnapshot) => {
+                    listContainer.innerHTML = '';
+                    const members = membersSnapshot.val();
+                    if (!members) return;
+
+                    Object.keys(members).forEach(uid => {
+                        const mem = members[uid];
+                        const isMe = uid === currentUser.uid;
+                        const isTargetAdmin = admins[uid] === true;
+                        
+                        // إظهار تاج ذهبي مميز بجانب اسم المسؤول
+                        const adminBadge = isTargetAdmin ? `<span class="text-amber-500 font-bold" title="مسؤول (أدمن)"><i class="fa-solid fa-crown text-xs ml-1"></i></span>` : '';
+
+                        // أزرار التحكم للمسؤولين: ترقية وطرد
+                        let controlButtonsHtml = '';
+                        if (isGroupAdmin && !isMe) {
+                            // زر الترقية يظهر للمسؤول الحالي فقط إذا كان العضو المستهدف ليس مشرفاً بعد
+                            const promoteBtn = !isTargetAdmin 
+                                ? `<button onclick="promoteToAdmin('${uid}', '${mem.name}')" class="text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/40 p-1.5 rounded-lg transition-colors" title="ترقية لمسؤول/مشرف"><i class="fa-solid fa-crown text-xs"></i></button>`
+                                : '';
+                                
+                            const kickBtn = `<button onclick="kickGroupMember('${uid}', '${mem.name}')" class="text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-950 p-1.5 rounded-lg transition-colors" title="طرد وحظر العضو"><i class="fa-solid fa-user-slash text-xs"></i></button>`;
+                            
+                            controlButtonsHtml = `<div class="flex items-center gap-1 ml-auto">${promoteBtn} ${kickBtn}</div>`;
+                        }
+
+                        const isStudying = mem.status.includes('🔴');
+                        const statusColor = isStudying ? 'text-rose-500' : 'text-emerald-500';
+                        const dotColor = isStudying ? 'bg-rose-500' : 'bg-emerald-500';
+
+                        listContainer.innerHTML += `
+                            <div class="flex items-center gap-2 justify-between">
+                                <div class="flex items-center gap-2">
+                                    <div class="relative">
+                                        <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold">${mem.name.charAt(0)}</div>
+                                        <span class="absolute bottom-0 right-0 w-2.5 h-2.5 ${dotColor} border-2 border-white dark:border-slate-900 rounded-full transition-colors"></span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-[10px] font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">${mem.name} ${isMe ? '(أنت)' : ''} ${adminBadge}</p>
+                                        <p class="text-[8px] ${statusColor}">${mem.status}</p>
+                                    </div>
+                                </div>
+                                ${controlButtonsHtml}
+                            </div>
+                        `;
+                    });
+                });
+            });
+        }
+        function startGroupTimer(durationMins = 25, autoBreak = true, breakMins = 5) {
+            if (!currentGroupId) return;
+            const endTime = Date.now() + (durationMins * 60 * 1000);
+            
+            db.ref(`groups/${userGender}/${currentGroupId}/timer`).set({
+                type: 'study',
+                endTime: endTime,
+                duration: durationMins,
+                startedBy: userName,
+                autoBreak: autoBreak,
+                breakDuration: breakMins // إرسال مدة الاستراحة المختارة لقاعدة البيانات
+            });
+            db.ref(`groups/${userGender}/${currentGroupId}/chat`).push({
+                senderId: 'system', text: `🚀 بدأ ${userName} جِلسة تركيز مشتركة لمدة ${durationMins} دقيقة.`, timestamp: Date.now()
+            });
+        }
+        // دالة إيقاف وإلغاء مؤقت البومودورو أو الاستراحة (خاصة بالأدمن وتدعم الحالتين)
+        function stopGroupTimer() {
+            if (!currentGroupId || !isGroupAdmin) return;
+            
+            // جلب نوع المؤقت الفعال حالياً لتخصيص رسالة التأكيد والإلغاء لجميع المتصلين
+            db.ref(`groups/${userGender}/${currentGroupId}/timer/type`).once('value').then((snap) => {
+                const timerType = snap.val() || 'study';
+                const confirmMsg = timerType === 'break' 
+                    ? "هل أنت متأكد من رغبتك في إيقاف وإنهاء فترة الاستراحة الحالية لجميع الأعضاء؟"
+                    : "هل أنت متأكد من رغبتك في إيقاف وإلغاء جلسة التركيز المشتركة الحالية لجميع الأعضاء؟";
+                
+                if (confirm(confirmMsg)) {
+                    db.ref(`groups/${userGender}/${currentGroupId}/timer`).remove().then(() => {
+                        const broadcastMsg = timerType === 'break'
+                            ? `🛑 قام المسؤول [${userName}] بإنهاء فترة الاستراحة المشتركة للغرفة.`
+                            : `🛑 قام المسؤول [${userName}] بإلغاء وإيقاف جلسة التركيز المشتركة الحالية.`;
+
+                        db.ref(`groups/${userGender}/${currentGroupId}/chat`).push({
+                            senderId: 'system',
+                            text: broadcastMsg,
+                            timestamp: Date.now()
+                        });
+                        showToast("تم الإيقاف بنجاح", "تم إنهاء وتصفير الجلسة بنجاح.");
+                    });
+                }
+            }).catch(err => console.error("فشل جلب تفاصيل المؤقت للإلغاء:", err));
+        }
+
+        function listenToGroupTimer() {
+            db.ref(`groups/${userGender}/${currentGroupId}/timer`).on('value', (snapshot) => {
+                const timerData = snapshot.val();
+                
+                if (!timerData) {
+                    if (groupTimerInterval) clearInterval(groupTimerInterval);
+                    const timerUI = document.getElementById('live-group-timer-ui');
+                    if (timerUI) timerUI.remove();
+                    db.ref(`groups/${userGender}/${currentGroupId}/members/${currentUser.uid}/status`).set('متصل 🟢');
+                    renderAdminControlsUI(false);
+                    localStorage.removeItem('hms_active_timer_end');
+                    activeRoomFocusSeconds = 0; // إعادة تعيين عداد الثواني
+                    renderChatInputArea(); // تحديث القفل
+                    return;
+                }
+
+                if (groupTimerInterval) clearInterval(groupTimerInterval);
+                const timerType = timerData.type || 'study';
+
+                if (timerType === 'study') {
+                    localStorage.setItem('hms_active_timer_end', timerData.endTime);
+                } else {
+                    localStorage.removeItem('hms_active_timer_end');
+                }
+
+                renderAdminControlsUI(true, timerType);
+                const chatContainer = document.getElementById('chat-messages-container').parentElement;
+                let timerUI = document.getElementById('live-group-timer-ui');
+                if(!timerUI) {
+                    timerUI = document.createElement('div');
+                    timerUI.id = "live-group-timer-ui";
+                    chatContainer.prepend(timerUI);
+                }
+
+                if (timerType === 'break') {
+                    db.ref(`groups/${userGender}/${currentGroupId}/members/${currentUser.uid}/status`).set('في استراحة ☕');
+                    timerUI.className = "bg-emerald-600 text-white p-2 text-center text-xs font-bold flex items-center justify-center gap-2 shadow-md z-10 transition-all";
+                } else {
+                    db.ref(`groups/${userGender}/${currentGroupId}/members/${currentUser.uid}/status`).set('يذاكر الآن 🔴');
+                    timerUI.className = "bg-indigo-600 text-white p-2 text-center text-xs font-bold flex items-center justify-center gap-2 shadow-md z-10 transition-all";
+                }
+
+                // رسم مربعات المهام والدردشة مرة واحدة عند بدء المؤقت لتجنب تجميد لوحة المفاتيح!
+                renderChatInputArea();
+
+                groupTimerInterval = setInterval(() => {
+                    const timeLeft = Math.max(0, Math.round((timerData.endTime - Date.now()) / 1000));
+                    
+                    // زيادة عداد الثواني الحقيقي المشفر للمستخدم أثناء جلسة الدراسة الفعالة فقط
+                    if (timerType === 'study' && timeLeft > 0) {
+                        activeRoomFocusSeconds++;
+                    }
+
+                    if (timeLeft > 0) {
+                        const mins = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+                        const secs = String(timeLeft % 60).padStart(2, '0');
+                        
+                        if (timerType === 'break') {
+                            timerUI.innerHTML = `<i class="fa-solid fa-mug-hot text-emerald-300 animate-bounce"></i> فترة استراحة مشتركة (المتبقي: ${mins}:${secs})`;
+                        } else {
+                            timerUI.innerHTML = `<i class="fa-solid fa-fire text-orange-400 animate-pulse"></i> جلسة تركيز مشتركة (المتبقي: ${mins}:${secs})`;
+                        }
+                        
+                        // تحديث الأرقام فقط دون المساس بمربعات الكتابة
+                        const remainingSpan = document.getElementById('task-session-countdown');
+                        if (remainingSpan) {
+                            remainingSpan.innerText = `${mins}:${secs}`;
+                        }
+                    } else {
+                        clearInterval(groupTimerInterval);
+                        activeRoomFocusSeconds = 0; // تصفير وقت المذاكرة الفعلي للجلسة القادمة
+                        
+                        if (timerType === 'study') {
+                            playBeep("alarm");
+                            if (isGroupAdmin && timerData.autoBreak) {
+                                const breakMinsSelected = timerData.breakDuration || 5;
+                                const breakEndTime = Date.now() + (breakMinsSelected * 60 * 1000);
+                                db.ref(`groups/${userGender}/${currentGroupId}/timer`).set({
+                                    type: 'break', endTime: breakEndTime, duration: breakMinsSelected,
+                                    startedBy: timerData.startedBy, autoBreak: false
+                                });
+                                db.ref(`groups/${userGender}/${currentGroupId}/chat`).push({
+                                    senderId: 'system',
+                                    text: `☕ بدأت فترة الاستراحة المشتركة للغرفة لمدة ${breakMinsSelected} دقائق. خذ قسطاً من الراحة!`,
+                                    timestamp: Date.now()
+                                });
+                            } else if (!timerData.autoBreak) {
+                                timerUI.className = "bg-emerald-500 text-white p-2 text-center text-xs font-bold shadow-md z-10";
+                                timerUI.innerHTML = `<i class="fa-solid fa-check-double"></i> انتهت الجلسة بنجاح!`;
+                                db.ref(`groups/${userGender}/${currentGroupId}/members/${currentUser.uid}/status`).set('متصل 🟢');
+                                setTimeout(() => { if(document.getElementById('live-group-timer-ui')) document.getElementById('live-group-timer-ui').remove(); }, 5000);
+                            }
+                        } else {
+                            playBeep("alarm");
+                            timerUI.className = "bg-indigo-600 text-white p-2 text-center text-xs font-bold shadow-md z-10";
+                            timerUI.innerHTML = `<i class="fa-solid fa-circle-exclamation animate-bounce"></i> انتهت الاستراحة! حان وقت العودة للتركيز المتبادل.`;
+                            db.ref(`groups/${userGender}/${currentGroupId}/members/${currentUser.uid}/status`).set('متصل 🟢');
+                            if (isGroupAdmin) {
+                                setTimeout(() => { db.ref(`groups/${userGender}/${currentGroupId}/timer`).remove(); }, 5000);
+                            } else {
+                                setTimeout(() => { if(document.getElementById('live-group-timer-ui')) document.getElementById('live-group-timer-ui').remove(); }, 5000);
+                            }
+                        }
+                        
+                        // تحديث الشاشة عند انتهاء الوقت فقط
+                        renderChatInputArea();
+                    }
+                }, 1000);
+            });
+        }
+
+        // الرابط يولد وبداخله حرف القسم، بحيث لو تم إرساله لجنس آخر يتم كشفه وحظره
+        function copyInviteLink() {
+            const link = window.location.href.split('?')[0] + `?join=${currentGroupId}&g=${userGender}`;
+            navigator.clipboard.writeText(link).then(() => showToast("تم النسخ!", "أرسل هذا الرابط لأصدقائك لينضموا فوراً."));
+        }
+        // دالة لعرض واجهة المدير الخاصة بالتحكم بالمؤقت والحذف (محدثة لدعم خيار تحديد وقت الراحة)
+        function renderAdminControlsUI(timerActive = false, timerType = 'study') {
+            const adminControlsContainer = document.getElementById('admin-group-controls');
+            const timerActionArea = document.getElementById('group-timer-action-area');
+            
+            if (isGroupAdmin) {
+                // زر الإغلاق والفتح الديناميكي وزر الحذف
+                const lockBtnHtml = isGroupLocked
+                    ? `<button onclick="toggleGroupLock()" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 px-3 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors border border-emerald-200 dark:border-emerald-800/50">
+                        <i class="fa-solid fa-lock-open"></i> فتح المجموعة
+                       </button>`
+                    : `<button onclick="toggleGroupLock()" class="bg-amber-50 text-amber-600 hover:bg-amber-100 dark:bg-amber-950/30 dark:text-amber-400 px-3 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors border border-amber-200 dark:border-amber-800/50">
+                        <i class="fa-solid fa-lock"></i> إغلاق المجموعة
+                       </button>`;
+
+                adminControlsContainer.innerHTML = `
+                    <div class="flex gap-2">
+                        ${lockBtnHtml}
+                        <button onclick="deleteActiveGroup()" class="bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/30 dark:text-rose-400 px-3 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors border border-rose-200 dark:border-rose-800/50">
+                            <i class="fa-solid fa-trash-can"></i> حذف المجموعة
+                        </button>
+                    </div>
+                `;
+
+                // 2. عرض خيار تشغيل أو إيقاف المؤقت بناءً على حالته النشطة ونوعه
+                if (timerActive) {
+                    const sessionLabel = timerType === 'break' ? '☕ استراحة مشتركة نشطة حالياً' : '⏳ جلسة تركيز نشطة حالياً';
+                    const buttonText = timerType === 'break' ? 'إنهاء الاستراحة والعودة' : 'إيقاف وإلغاء جلسة التركيز';
+                    
+                    timerActionArea.innerHTML = `
+                        <div class="flex flex-col gap-2">
+                            <div class="text-xs text-amber-500 font-bold bg-amber-50 dark:bg-amber-950/20 p-2.5 rounded-xl border border-amber-200 dark:border-amber-800/30">
+                                ${sessionLabel}
+                            </div>
+                            <button onclick="stopGroupTimer()" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-sm shadow-rose-500/20">
+                                <i class="fa-solid fa-circle-stop"></i> ${buttonText}
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    timerActionArea.innerHTML = `
+                        <div class="flex flex-col gap-2.5">
+                            <!-- تحديد وقت الدراسة -->
+                            <select id="admin-timer-duration" class="w-full text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg p-2 outline-none cursor-pointer">
+                                <option value="15">15 دقيقة (تحضير سريع)</option>
+                                <option value="25" selected>25 دقيقة (بومودورو قياسي)</option>
+                                <option value="45">45 دقيقة (جلسة عميقة)</option>
+                                <option value="60">60 دقيقة (تركيز فائق)</option>
+                            </select>
+                            
+                            <!-- تحديد وتفعيل وقت الراحة -->
+                            <div class="flex flex-col gap-1.5 bg-slate-50 dark:bg-slate-800/40 p-2 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
+                                <label class="flex items-center gap-2 px-1 text-[10px] text-right text-slate-600 dark:text-slate-400 cursor-pointer select-none">
+                                    <input type="checkbox" id="admin-auto-break" checked onchange="document.getElementById('admin-break-duration').disabled = !this.checked" class="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-indigo-500 accent-indigo-500 cursor-pointer">
+                                    <span class="font-bold">تشغيل استراحة مشتركة تلقائياً</span>
+                                </label>
+                                <div class="flex items-center justify-between px-1">
+                                    <span class="text-[10px] text-slate-400">مدة الراحة المفضلة:</span>
+                                    <select id="admin-break-duration" class="text-[10px] bg-white dark:bg-slate-800 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 rounded px-2 py-1 outline-none cursor-pointer">
+                                        <option value="5" selected>5 دقائق</option>
+                                        <option value="10">10 دقائق</option>
+                                        <option value="15">15 دقيقة</option>
+                                        <option value="20">20 دقيقة</option>
+                                        <option value="25">25 دقيقة</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button onclick="startGroupTimer(parseInt(document.getElementById('admin-timer-duration').value), document.getElementById('admin-auto-break').checked, parseInt(document.getElementById('admin-break-duration').value))" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-sm">
+                                <i class="fa-solid fa-play"></i> ابدأ الجلسة المشتركة
+                            </button>
+                        </div>
+                    `;
+                }
+            } else {
+                // واجهة الأعضاء العاديين (انتظار تحكم المنشئ)
+                adminControlsContainer.innerHTML = '';
+                timerActionArea.innerHTML = `
+                    <p class="text-xs text-slate-400 dark:text-slate-500 py-3">المؤقت المشترك والتحكم يخضع لمنشئ المجموعة فقط 🛡️</p>
+                `;
+            }
+        }
+
+        // دالة طرد وحظر العضو من المجموعة
+        function kickGroupMember(memberUid, memberName) {
+            if (!isGroupAdmin || !currentGroupId) return;
+            if (confirm(`هل أنت متأكد من طرد وحظر ${memberName} من هذه المجموعة؟`)) {
+                // تسجيل عملية الطرد في قاعدة البيانات
+                db.ref(`groups/${userGender}/${currentGroupId}/kicked/${memberUid}`).set(true).then(() => {
+                    // حذفه من قائمة الأعضاء النشطين
+                    db.ref(`groups/${userGender}/${currentGroupId}/members/${memberUid}`).remove();
+                    
+                    // إرسال رسالة توضيحية لجميع المتواجدين في الشات
+                    db.ref(`groups/${userGender}/${currentGroupId}/chat`).push({
+                        senderId: 'system',
+                        text: `🚫 قام منشئ المجموعة بطرد العضو: ${memberName}`,
+                        timestamp: Date.now()
+                    });
+                    showToast("تم الطرد", `تم طرد وحظر العضو ${memberName} بنجاح.`);
+                });
+            }
+        }
+        // دالة ترقية العضو ليصبح مسؤولاً (خاصة بالمسؤولين الحاليين فقط)
+        function promoteToAdmin(memberUid, memberName) {
+            if (!currentGroupId || !isGroupAdmin) return;
+            
+            if (confirm(`هل أنت متأكد من ترقية العضو [${memberName}] ليصبح مسؤولاً (أدمن) مشاركاً في هذه المجموعة؟`)) {
+                // إضافة العضو للائحة المسؤولين في السيرفر
+                db.ref(`groups/${userGender}/${currentGroupId}/admins/${memberUid}`).set(true).then(() => {
+                    // بث رسالة الترقية في الدردشة لجميع الأعضاء
+                    db.ref(`groups/${userGender}/${currentGroupId}/chat`).push({
+                        senderId: 'system',
+                        text: `👑 تم ترقية العضو [${memberName}] ليصبح مسؤولاً (أدمن) مشاركاً بواسطة [${userName}].`,
+                        timestamp: Date.now()
+                    });
+                    showToast("تمت الترقية بنجاح ✅", `أصبح [${memberName}] يتمتع بصلاحيات المسؤول الآن.`);
+                }).catch(err => {
+                    console.error("فشل الترقية:", err);
+                    showToast("تنبيه", "عفواً، تعذر ترقية العضو حالياً.");
+                });
+            }
+        }
+        // دالة تغيير حالة قفل/إغلاق المجموعة لمنع انضمام أعضاء جدد
+        function toggleGroupLock() {
+            if (!isGroupAdmin || !currentGroupId) return;
+            const newLockState = !isGroupLocked;
+            
+            db.ref(`groups/${userGender}/${currentGroupId}/info/locked`).set(newLockState).then(() => {
+                const msgText = newLockState 
+                    ? `🔒 قام المسؤول [${userName}] بإغلاق المجموعة. لن يتمكن أي عضو جديد من الانضمام الآن.` 
+                    : `🔓 قام المسؤول [${userName}] بفتح المجموعة مجدداً للانضمام العام.`;
+                
+                db.ref(`groups/${userGender}/${currentGroupId}/chat`).push({
+                    senderId: 'system',
+                    text: msgText,
+                    timestamp: Date.now()
+                });
+                
+                showToast(newLockState ? "تم إغلاق المجموعة" : "تم فتح المجموعة", newLockState ? "المجموعة محظورة الآن على الأعضاء الجدد." : "المجموعة متاحة للجميع الآن.");
+            }).catch(err => {
+                console.error("فشل تغيير حالة القفل:", err);
+                showToast("خطأ", "عفواً، تعذر تعديل حالة إغلاق المجموعة حالياً.");
+            });
+        }
+
+        // دالة حذف المجموعة نهائياً
+        function deleteActiveGroup() {
+            if (!isGroupAdmin || !currentGroupId) return;
+            if (confirm("⚠️ تحذير: هل أنت متأكد من حذف هذه المجموعة بالكامل؟ سيتم إخراج جميع الأعضاء المتصلين فوراً.")) {
+                db.ref(`groups/${userGender}/${currentGroupId}/chat`).push({
+                    senderId: 'system',
+                    text: `⚠️ تم إغلاق وحذف المجموعة بواسطة منشئها.`,
+                    timestamp: Date.now()
+                }).then(() => {
+                    // مسح بيانات المجموعة بالكامل من السيرفر
+                    db.ref(`groups/${userGender}/${currentGroupId}`).remove().then(() => {
+                        showToast("تم الحذف", "تم إغلاق وحذف المجموعة بنجاح.");
+                    });
+                });
+            }
+        }
+       // ===================================================
+        // ميزة المذاكرة الذكية لفتح الدردشة (Task-to-Chat Engine) - محدثة ونهائية
+        // ===================================================
+
+        function renderChatInputArea() {
+            const chatContainer = document.getElementById('chat-input-container');
+            const tasksContainer = document.getElementById('group-tasks-action-area');
+            if (!chatContainer || !tasksContainer) return;
+
+            const activeTimerEnd = localStorage.getItem('hms_active_timer_end');
+            const liveTimerUI = document.getElementById('live-group-timer-ui');
+            const isBreakTime = liveTimerUI && liveTimerUI.innerText.includes('استراحة');
+
+            const totalBankMsgs = parseInt(localStorage.getItem('hms_chat_unlocked_msgs') || '0');
+            const sessionUsedMsgs = parseInt(localStorage.getItem('hms_session_msg_count') || '0');
+            const remainingInSession = Math.max(0, 3 - sessionUsedMsgs); // الحد الأقصى 3 رسائل
+
+            const groupTasksKey = `hms_group_tasks_${currentGroupId}`;
+            const tasks = JSON.parse(localStorage.getItem(groupTasksKey) || '[]');
+            const totalTasks = tasks.length;
+            const completedTasks = tasks.filter(t => t.completed).length;
+
+            const activeColor = userGender === 'male' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-rose-500 hover:bg-rose-600';
+            const activeBg = userGender === 'male' ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-900/50 text-blue-600 dark:text-blue-400' : 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400';
+
+            // حالة 1: لا توجد جلسة نشطة
+            if (!activeTimerEnd && !isBreakTime) {
+                chatContainer.innerHTML = `
+                    <div class="p-4 text-center text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800">
+                        <i class="fa-solid fa-lock text-xl mb-2 block"></i> الدردشة والمهام مغلقة. بانتظار بدء الجلسة من المسؤول.
+                    </div>
+                `;
+                tasksContainer.innerHTML = '';
+                return;
+            }
+
+            // === بناء شريط الدردشة ===
+            if (isBreakTime) {
+                // وقت الراحة: الدردشة تعتمد على الرصيد أيضاً بحد أقصى 3
+                if (totalBankMsgs > 0 && remainingInSession > 0) {
+                    chatContainer.innerHTML = `
+                        <div class="px-4 py-2 flex justify-between items-center bg-emerald-50 dark:bg-emerald-900/20 border-b border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
+                            <span>☕ استراحة نشطة (مسموح بـ ${remainingInSession} رسائل الآن)</span>
+                            <span>🏦 الرصيد الإجمالي: ${totalBankMsgs}</span>
+                        </div>
+                        <div class="p-3 flex gap-2 items-center">
+                            <input type="text" id="chat-input-msg" onkeypress="if(event.key === 'Enter') sendGroupMessage()" placeholder="تحدث مع زملائك..." class="flex-1 bg-slate-50 dark:bg-slate-800 text-sm px-4 py-2.5 rounded-full outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-emerald-500 text-slate-800 dark:text-white">
+                            <button onclick="sendGroupMessage()" class="w-10 h-10 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center transition-colors shadow-md shrink-0"><i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    `;
+                } else if (remainingInSession === 0) {
+                    chatContainer.innerHTML = `<div class="p-3 text-center text-xs font-bold text-rose-500 bg-rose-50 dark:bg-rose-900/20">استهلكت الحد الأقصى (3 رسائل) لهذه الجلسة.</div>`;
+                } else {
+                    chatContainer.innerHTML = `<div class="p-3 text-center text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800">رصيدك 0. أكمل مهام الجلسة القادمة لتربح رسائل.</div>`;
+                }
+                
+                // في الراحة لا تظهر المهام
+                tasksContainer.innerHTML = `
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-emerald-200 dark:border-emerald-800/50 p-4 shadow-sm text-center">
+                        <i class="fa-solid fa-mug-hot text-3xl text-emerald-400 mb-2 animate-bounce"></i>
+                        <h4 class="font-bold text-sm text-emerald-600 dark:text-emerald-400">وقت الراحة!</h4>
+                        <p class="text-[10px] text-slate-500 mt-1">لا توجد مهام الآن.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // === وقت المذاكرة ===
+            // شريط الدردشة
+            if (totalBankMsgs > 0 && remainingInSession > 0) {
+                chatContainer.innerHTML = `
+                    <div class="px-4 py-2 flex justify-between items-center ${activeBg} border-b text-[10px] font-bold">
+                        <span>🔓 مسموح لك بـ ${remainingInSession} رسائل الآن</span>
+                        <span>🏦 الرصيد الإجمالي: ${totalBankMsgs}</span>
+                    </div>
+                    <div class="p-3 flex gap-2 items-center">
+                        <input type="text" id="chat-input-msg" onkeypress="if(event.key === 'Enter') sendGroupMessage()" placeholder="اكتب رسالة سريعة..." class="flex-1 bg-slate-50 dark:bg-slate-800 text-sm px-4 py-2.5 rounded-full outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-indigo-500 text-slate-800 dark:text-white">
+                        <button onclick="sendGroupMessage()" class="w-10 h-10 rounded-full ${activeColor} text-white flex items-center justify-center transition-colors shadow-md shrink-0"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                `;
+            } else if (remainingInSession === 0) {
+                chatContainer.innerHTML = `<div class="p-3 text-center text-xs font-bold text-rose-500 bg-rose-50 dark:bg-rose-900/20">استهلكت الحد الأقصى (3 رسائل) لهذه الجلسة. ركز الآن!</div>`;
+            } else {
+                chatContainer.innerHTML = `<div class="p-3 text-center text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800">رصيدك 0. أضف مهامك وأنجزها لتربح رسائل للجلسة القادمة.</div>`;
+            }
+
+            // لوحة المهام
+            let tasksHtml = '';
+            if (tasks.length === 0) {
+                tasksHtml = `<p class="text-[10px] text-slate-400 text-center py-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl">لم تضف مهام بعد. أضف مهامك لبدء التركيز 🎯</p>`;
+            } else {
+                tasks.forEach(task => {
+                    tasksHtml += `
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 text-xs transition-all">
+                            <div class="flex items-center gap-2 flex-1 min-w-0">
+                                <input type="checkbox" onchange="toggleGroupStudyTask('${task.id}')" ${task.completed ? 'checked' : ''} class="w-4 h-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-500 accent-indigo-500 cursor-pointer shrink-0">
+                                <span class="font-bold text-slate-700 dark:text-slate-300 truncate ${task.completed ? 'line-through opacity-50' : ''}">${task.text}</span>
+                            </div>
+                            <button onclick="deleteGroupStudyTask('${task.id}')" class="text-rose-400 hover:text-rose-600 p-1.5 shrink-0"><i class="fa-solid fa-trash text-sm"></i></button>
+                        </div>
+                    `;
+                });
+            }
+
+            tasksContainer.innerHTML = `
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col gap-3">
+                    <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+                        <h5 class="font-bold text-xs text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-list-check"></i> مهام الجلسة النشطة
+                        </h5>
+                        <span class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-bold">${completedTasks}/${totalTasks}</span>
+                    </div>
+                    <p class="text-[9px] text-slate-400 leading-relaxed">أنجز جميع مهامك قبل انتهاء المؤقت لتكسب 5 رسائل للجلسة القادمة.</p>
+                    
+                    <div class="flex flex-col gap-1.5 max-h-48 overflow-y-auto custom-scrollbar pr-1">${tasksHtml}</div>
+                    
+                    <div class="flex flex-col gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 mt-1">
+                        <div class="flex gap-2">
+                            <input type="text" id="group-study-task-input" onkeypress="if(event.key === 'Enter') addGroupStudyTask()" placeholder="أضف مهمة..." class="flex-1 text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white rounded-xl px-3 py-2 outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-indigo-500">
+                            <button onclick="addGroupStudyTask()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-sm shrink-0"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // دالة إرسال الرسائل (محدثة لتدعم حد الـ 3 رسائل في الجلسة والمخزون الإجمالي)
+        function sendGroupMessage() {
+            const input = document.getElementById('chat-input-msg');
+            if(!input) return;
+            const text = input.value.trim();
+            if (!text || !currentGroupId) return;
+
+            let totalBankMsgs = parseInt(localStorage.getItem('hms_chat_unlocked_msgs') || '0');
+            let sessionUsedMsgs = parseInt(localStorage.getItem('hms_session_msg_count') || '0');
+
+            if (sessionUsedMsgs >= 3) {
+                showToast("الحد الأقصى 🛑", "لقد استهلكت الـ 3 رسائل المسموحة في هذه الجلسة. ركز فيما تفعله!");
+                renderChatInputArea();
+                return;
+            }
+
+            if (totalBankMsgs <= 0) {
+                showToast("رصيد فارغ", "ليس لديك رسائل مخزنة لإرسالها.");
+                renderChatInputArea();
+                return;
+            }
+
+            // الإرسال لقاعدة البيانات
+            db.ref(`groups/${userGender}/${currentGroupId}/chat`).push({
+                senderId: currentUser.uid,
+                senderName: userName,
+                text: text,
+                timestamp: Date.now()
+            }).then(() => {
+                // الخصم من البنك وزيادة العداد الحالي
+                localStorage.setItem('hms_chat_unlocked_msgs', totalBankMsgs - 1);
+                localStorage.setItem('hms_session_msg_count', sessionUsedMsgs + 1);
+                renderChatInputArea(); // تحديث الواجهة
+            });
+
+            input.value = '';
+        }
+        
+        // تم دمج النظام، هذه الدالة للرجوع فقط لمنع الأخطاء
+        function sendGroupMessageDirectlyWithoutLimit() {
+            sendGroupMessage();
+        }
+
+        function addGroupStudyTask() {
+            const input = document.getElementById('group-study-task-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            const groupTasksKey = `hms_group_tasks_${currentGroupId}`;
+            const tasks = JSON.parse(localStorage.getItem(groupTasksKey) || '[]');
+            
+            tasks.push({ id: 'gst-' + Date.now(), text: text, completed: false });
+            
+            localStorage.setItem(groupTasksKey, JSON.stringify(tasks));
+            renderChatInputArea();
+        }
+
+        function toggleGroupStudyTask(id) {
+            const groupTasksKey = `hms_group_tasks_${currentGroupId}`;
+            const tasks = JSON.parse(localStorage.getItem(groupTasksKey) || '[]');
+            const task = tasks.find(t => t.id === id);
+            
+            if (task) {
+                task.completed = !task.completed; 
+                localStorage.setItem(groupTasksKey, JSON.stringify(tasks));
+                if (task.completed) {
+                    playBeep("success");
+                    updateGamificationRankSilently(5);
+                } else {
+                    updateGamificationRankSilently(-5);
+                }
+                renderChatInputArea();
+            }
+        }
+
+        function deleteGroupStudyTask(id) {
+            const groupTasksKey = `hms_group_tasks_${currentGroupId}`;
+            let tasks = JSON.parse(localStorage.getItem(groupTasksKey) || '[]');
+            tasks = tasks.filter(t => t.id !== id);
+            localStorage.setItem(groupTasksKey, JSON.stringify(tasks));
+            renderChatInputArea();
+        }
+
+        function listenToGroupTimer() {
+            db.ref(`groups/${userGender}/${currentGroupId}/timer`).on('value', (snapshot) => {
+                const timerData = snapshot.val();
+                
+                if (!timerData) {
+                    if (groupTimerInterval) clearInterval(groupTimerInterval);
+                    const timerUI = document.getElementById('live-group-timer-ui');
+                    if (timerUI) timerUI.remove();
+                    db.ref(`groups/${userGender}/${currentGroupId}/members/${currentUser.uid}/status`).set('متصل 🟢');
+                    renderAdminControlsUI(false);
+                    localStorage.removeItem('hms_active_timer_end');
+                    renderChatInputArea(); 
+                    return;
+                }
+
+                if (groupTimerInterval) clearInterval(groupTimerInterval);
+                const timerType = timerData.type || 'study';
+
+                // ==========================================
+                // تهيئة عداد الرسائل للجلسة الجديدة
+                // ==========================================
+                const currentTimerId = localStorage.getItem('hms_current_timer_id');
+                if (currentTimerId !== timerData.endTime.toString()) {
+                    // جلسة جديدة تماماً! نُصَفِّر عداد الاستهلاك ليتمكن من إرسال 3 رسائل
+                    localStorage.setItem('hms_current_timer_id', timerData.endTime.toString());
+                    localStorage.setItem('hms_session_msg_count', '0');
+                }
+
+                if (timerType === 'study') {
+                    localStorage.setItem('hms_active_timer_end', timerData.endTime);
+                } else {
+                    localStorage.removeItem('hms_active_timer_end');
+                }
+
+                renderAdminControlsUI(true, timerType);
+                const chatContainer = document.getElementById('chat-messages-container').parentElement;
+                let timerUI = document.getElementById('live-group-timer-ui');
+                if(!timerUI) {
+                    timerUI = document.createElement('div');
+                    timerUI.id = "live-group-timer-ui";
+                    chatContainer.prepend(timerUI);
+                }
+
+                if (timerType === 'break') {
+                    db.ref(`groups/${userGender}/${currentGroupId}/members/${currentUser.uid}/status`).set('في استراحة ☕');
+                    timerUI.className = "bg-emerald-600 text-white p-2 text-center text-xs font-bold flex items-center justify-center gap-2 shadow-md z-10 transition-all";
+                } else {
+                    db.ref(`groups/${userGender}/${currentGroupId}/members/${currentUser.uid}/status`).set('يذاكر الآن 🔴');
+                    timerUI.className = "bg-indigo-600 text-white p-2 text-center text-xs font-bold flex items-center justify-center gap-2 shadow-md z-10 transition-all";
+                }
+
+                renderChatInputArea(); // رسم الواجهة مرة واحدة
+
+                groupTimerInterval = setInterval(() => {
+                    const timeLeft = Math.max(0, Math.round((timerData.endTime - Date.now()) / 1000));
+
+                    if (timeLeft > 0) {
+                        const mins = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+                        const secs = String(timeLeft % 60).padStart(2, '0');
+                        
+                        if (timerType === 'break') {
+                            timerUI.innerHTML = `<i class="fa-solid fa-mug-hot text-emerald-300 animate-bounce"></i> فترة استراحة مشتركة (المتبقي: ${mins}:${secs})`;
+                        } else {
+                            timerUI.innerHTML = `<i class="fa-solid fa-fire text-orange-400 animate-pulse"></i> جلسة تركيز (المتبقي: ${mins}:${secs})`;
+                        }
+                    } else {
+                        // ==========================================
+                        // انتهى الوقت! تفعيل المكافأة التلقائية للمهام
+                        // ==========================================
+                        clearInterval(groupTimerInterval);
+                        
+                        if (timerType === 'study') {
+                            playBeep("alarm");
+
+                            // التحقق التلقائي من المهام
+                            const groupTasksKey = `hms_group_tasks_${currentGroupId}`;
+                            const tasks = JSON.parse(localStorage.getItem(groupTasksKey) || '[]');
+                            
+                            if (tasks.length > 0) {
+                                const allDone = tasks.every(t => t.completed);
+                                if (allDone) {
+                                    let currentMsgs = parseInt(localStorage.getItem('hms_chat_unlocked_msgs') || '0');
+                                    localStorage.setItem('hms_chat_unlocked_msgs', currentMsgs + 5); // إضافة 5 رسائل للبنك
+                                    localStorage.setItem(groupTasksKey, '[]'); // تصفير المهام
+                                    
+                                    updateGamificationRankSilently(50);
+                                    if (window.confetti) confetti({ particleCount: 100, spread: 70, origin: { y: 0.8 } });
+                                    
+                                    db.ref(`groups/${userGender}/${currentGroupId}/chat`).push({
+                                        senderId: 'system',
+                                        text: `🏆 أتمَّ [${userName}] جميع مهامه بنجاح وحصل على 5 رسائل للدردشة! 🎯🔥`,
+                                        timestamp: Date.now()
+                                    });
+                                    showToast("عاش يا بطل! 🎉", "أتممت المهام وكسبت 5 رسائل مخزنة لاستخدامها متى شئت.");
+                                } else {
+                                    showToast("انتهى الوقت ⏱️", "انتهت الجلسة ولم تكمل جميع مهامك. لا توجد مكافأة هذه المرة.");
+                                    localStorage.setItem(groupTasksKey, '[]'); // تصفير المهام
+                                }
+                            }
+
+                            if (isGroupAdmin && timerData.autoBreak) {
+                                const breakMinsSelected = timerData.breakDuration || 5;
+                                const breakEndTime = Date.now() + (breakMinsSelected * 60 * 1000);
+                                db.ref(`groups/${userGender}/${currentGroupId}/timer`).set({
+                                    type: 'break', endTime: breakEndTime, duration: breakMinsSelected,
+                                    startedBy: timerData.startedBy, autoBreak: false
+                                });
+                            } else if (!timerData.autoBreak) {
+                                timerUI.className = "bg-emerald-500 text-white p-2 text-center text-xs font-bold shadow-md z-10";
+                                timerUI.innerHTML = `<i class="fa-solid fa-check-double"></i> انتهت الجلسة!`;
+                                db.ref(`groups/${userGender}/${currentGroupId}/members/${currentUser.uid}/status`).set('متصل 🟢');
+                                setTimeout(() => { if(document.getElementById('live-group-timer-ui')) document.getElementById('live-group-timer-ui').remove(); }, 5000);
+                            }
+                        } else {
+                            playBeep("alarm");
+                            timerUI.className = "bg-indigo-600 text-white p-2 text-center text-xs font-bold shadow-md z-10";
+                            timerUI.innerHTML = `<i class="fa-solid fa-circle-exclamation animate-bounce"></i> انتهت الاستراحة!`;
+                            db.ref(`groups/${userGender}/${currentGroupId}/members/${currentUser.uid}/status`).set('متصل 🟢');
+                            if (isGroupAdmin) {
+                                setTimeout(() => { db.ref(`groups/${userGender}/${currentGroupId}/timer`).remove(); }, 5000);
+                            } else {
+                                setTimeout(() => { if(document.getElementById('live-group-timer-ui')) document.getElementById('live-group-timer-ui').remove(); }, 5000);
+                            }
+                        }
+                        
+                        renderChatInputArea(); // تحديث الواجهة نهائياً
+                    }
+                }, 1000);
+            });
+        } 
+        
     </script>
+    <!-- نافذة إعداد الملف الشخصي (فصل الشباب عن البنات) -->
+    <div id="profile-setup-modal" class="hidden fixed inset-0 z-[150] bg-slate-900/90 backdrop-blur-sm items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200 dark:border-slate-700">
+            <div class="bg-gradient-to-r from-blue-600 to-cyan-600 p-5 text-white text-center">
+                <i class="fa-solid fa-user-shield text-4xl mb-2"></i>
+                <h3 class="font-bold text-xl">إعداد ملف المذاكرة الجماعية</h3>
+                <p class="text-xs text-blue-100 mt-1">يرجى تحديد قسمك لضمان الخصوصية ومنع الاختلاط</p>
+            </div>
+            <div class="p-6 flex flex-col gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-2">اسمك (كما سيظهر للآخرين):</label>
+                    <input type="text" id="setup-username" placeholder="اكتب اسمك الأول..." class="w-full text-sm bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white rounded-xl px-4 py-3 outline-none border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-2">اختر القسم (لا يمكن تغييره لاحقاً):</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="setup-gender" value="male" class="peer hidden">
+                            <div class="p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/30 text-center transition-all">
+                                <i class="fa-solid fa-person text-2xl text-slate-400 peer-checked:text-blue-500 mb-1"></i>
+                                <span class="block font-bold text-sm text-slate-600 dark:text-slate-300 peer-checked:text-blue-600 dark:peer-checked:text-blue-400">قسم الشباب</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="setup-gender" value="female" class="peer hidden">
+                            <div class="p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 peer-checked:border-rose-500 peer-checked:bg-rose-50 dark:peer-checked:bg-rose-900/30 text-center transition-all">
+                                <i class="fa-solid fa-person-dress text-2xl text-slate-400 peer-checked:text-rose-500 mb-1"></i>
+                                <span class="block font-bold text-sm text-slate-600 dark:text-slate-300 peer-checked:text-rose-600 dark:peer-checked:text-rose-400">قسم البنات</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <button onclick="saveUserProfile()" class="mt-2 w-full bg-slate-800 hover:bg-slate-900 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 py-3 rounded-xl font-bold text-sm transition-all shadow-md">
+                    حفظ الدخول للمجتمع <i class="fa-solid fa-arrow-left mr-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
