@@ -6331,7 +6331,7 @@ window.addEventListener('appinstalled', () => {
                 // مراقبة ما إذا تم حذف المجموعة أو انتهى وقتها لإخراج الأعضاء فوراً لصفحة الاستكشاف
                 db.ref(`groups/${userGender}/${groupId}/info`).on('value', (snapshot) => {
                     if (!snapshot.exists() && currentGroupId === groupId) {
-                        alert("⚠️ تم إغلاق وحذف هذه المجموعة تلقائياً (لانقضاء صلاحية الـ 5 ساعات أو بطلب من المدير).");
+                        alert("⚠️ تم إغلاق وحذف هذه المجموعة تلقائياً (لانقضاء صلاحية الـ 7 ساعات أو بطلب من المدير).");
                         leaveGroup();
                     }
                 });
