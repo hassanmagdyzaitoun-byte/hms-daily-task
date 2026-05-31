@@ -1008,10 +1008,10 @@
 
                     <div class="flex flex-col lg:flex-row gap-4 flex-1 min-h-0">
                         <!-- الجانب الأيمن: مخصص للدردشة فقط -->
-                        <div class="flex-1 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden relative">
-                            <div id="chat-messages-container" class="w-full h-[400px] lg:h-[550px] overflow-y-auto custom-scrollbar p-4 flex flex-col gap-3 bg-white dark:bg-slate-900"></div>
+                        <div class="flex-1 min-h-[450px] lg:min-h-[600px] bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden relative shadow-sm">
+                            <div id="chat-messages-container" class="w-full flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-3 bg-white dark:bg-slate-900"></div>
                             <!-- شريط كتابة الرسائل فقط -->
-                            <div id="chat-input-container" class="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"></div>
+                            <div id="chat-input-container" class="shrink-0 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"></div>
                         </div>
 
                         <!-- الجانب الأيسر: المؤقت + المهام + المتصلين -->
@@ -6062,22 +6062,35 @@ window.addEventListener('appinstalled', () => {
         auth.onAuthStateChanged((user) => {
             if (user) {
                 currentUser = user;
-                // جلب بيانات المستخدم من السيرفر للتأكد من هويته الحقيقية
-                db.ref(`users/${currentUser.uid}`).once('value').then((snapshot) => {
-                    if (snapshot.exists()) {
-                        const userData = snapshot.val();
-                        userName = userData.name;
-                        userGender = userData.gender; // 'male' or 'female'
-                        
-                        updateSectionTitleUI();
-                        loadPublicGroups();
-                        checkUrlForInvite();
-                    }
-                }).catch(err => console.error("فشل جلب البيانات:", err));
+                // الاعتماد على الذاكرة المحلية أولاً لسرعة الهاتف
+                const localName = localStorage.getItem('hms_user_name');
+                const localGender = localStorage.getItem('hms_user_gender');
+                
+                if (localName && localGender) {
+                    userName = localName;
+                    userGender = localGender;
+                    updateSectionTitleUI();
+                    loadPublicGroups();
+                    checkUrlForInvite();
+                } else {
+                    // جلب من السيرفر كخطة بديلة إذا تم مسح ذاكرة الهاتف
+                    db.ref(`users/${currentUser.uid}`).once('value').then((snapshot) => {
+                        if (snapshot.exists()) {
+                            const userData = snapshot.val();
+                            userName = userData.name;
+                            userGender = userData.gender;
+                            localStorage.setItem('hms_user_name', userName);
+                            localStorage.setItem('hms_user_gender', userGender);
+                            updateSectionTitleUI();
+                            loadPublicGroups();
+                            checkUrlForInvite();
+                        }
+                    });
+                }
             }
         });
 
-        // دالة حفظ ملف المستخدم في السيرفر (نهائي ولا يمكن تغييره)
+        // دالة حفظ ملف المستخدم في السيرفر والمحلي
         function saveUserProfile() {
             const nameInput = document.getElementById('setup-username').value.trim();
             const genderInput = document.querySelector('input[name="setup-gender"]:checked');
@@ -6085,40 +6098,45 @@ window.addEventListener('appinstalled', () => {
             if (!nameInput) { alert("يرجى كتابة اسمك!"); return; }
             if (!genderInput) { alert("يرجى اختيار القسم (شباب أو بنات)!"); return; }
 
-            // الحفظ في قاعدة البيانات
-            db.ref(`users/${currentUser.uid}`).set({
-                name: nameInput,
-                gender: genderInput.value,
-                createdAt: firebase.database.ServerValue.TIMESTAMP
-            }).then(() => {
-                userName = nameInput;
-                userGender = genderInput.value;
-                document.getElementById('profile-setup-modal').classList.add('hidden');
-                document.getElementById('profile-setup-modal').classList.remove('flex');
-                
-                updateSectionTitleUI();
-                loadPublicGroups();
-                showToast("نجاح!", "تم تسجيل دخولك للمجتمع بنجاح.");
-            }).catch(() => {
-                alert("حدث خطأ في التسجيل، تأكد من اتصالك بالإنترنت.");
-            });
-        }
-        // وظيفة التحقق من وجود الملف الشخصي عند محاولة فتح المذاكرة الجماعية
-        function checkGroupProfileAccess() {
-            if (!currentUser) return;
-            db.ref(`users/${currentUser.uid}`).once('value').then((snapshot) => {
-                if (snapshot.exists()) {
-                    const userData = snapshot.val();
-                    userName = userData.name;
-                    userGender = userData.gender;
-                    updateSectionTitleUI();
+            // 1. الحفظ محلياً لضمان عدم ظهور النافذة مرة أخرى وإغلاقها فوراً
+            localStorage.setItem('hms_user_name', nameInput);
+            localStorage.setItem('hms_user_gender', genderInput.value);
+            userName = nameInput;
+            userGender = genderInput.value;
+
+            document.getElementById('profile-setup-modal').classList.add('hidden');
+            document.getElementById('profile-setup-modal').classList.remove('flex');
+            updateSectionTitleUI();
+
+            // 2. الحفظ في السيرفر
+            if (currentUser) {
+                db.ref(`users/${currentUser.uid}`).set({
+                    name: nameInput,
+                    gender: genderInput.value,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                }).then(() => {
                     loadPublicGroups();
-                } else {
-                    // إذا لم يكن مسجلاً بالسيرفر، تظهر له نافذة الإعداد الآن
-                    document.getElementById('profile-setup-modal').classList.remove('hidden');
-                    document.getElementById('profile-setup-modal').classList.add('flex');
-                }
-            }).catch(err => console.error("خطأ في التحقق من الملف الشخصي:", err));
+                    showToast("نجاح!", "تم تسجيل دخولك للمجتمع بنجاح.");
+                });
+            } else {
+                showToast("تم الحفظ محلياً", "سيتم المزامنة مع المجموعات عند توفر إنترنت.");
+            }
+        }
+
+        // وظيفة التحقق الفورية (بدون انتظار الإنترنت إطلاقاً)
+        function checkGroupProfileAccess() {
+            const localName = localStorage.getItem('hms_user_name');
+            const localGender = localStorage.getItem('hms_user_gender');
+
+            if (localName && localGender) {
+                userName = localName;
+                userGender = localGender;
+                return; // مسجل بالفعل، لا تظهر النافذة
+            }
+
+            // إذا لم يكن مسجلاً، أظهر النافذة فوراً وبدون أي تأخير!
+            document.getElementById('profile-setup-modal').classList.remove('hidden');
+            document.getElementById('profile-setup-modal').classList.add('flex');
         }
 
         function updateSectionTitleUI() {
