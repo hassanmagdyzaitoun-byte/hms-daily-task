@@ -6856,8 +6856,8 @@ window.addEventListener('appinstalled', () => {
                             <span>🏦 الرصيد الإجمالي: ${totalBankMsgs}</span>
                         </div>
                         <div class="p-3 flex gap-2 items-center">
-                            <input type="text" id="chat-input-msg" onkeypress="if(event.key === 'Enter') sendGroupMessage()" placeholder="تحدث مع زملائك..." class="flex-1 bg-slate-50 dark:bg-slate-800 text-sm px-4 py-2.5 rounded-full outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-emerald-500 text-slate-800 dark:text-white">
-                            <button onclick="sendGroupMessage()" class="w-10 h-10 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center transition-colors shadow-md shrink-0"><i class="fa-solid fa-paper-plane"></i></button>
+                            <input type="text" id="chat-input-msg" onkeydown="if(event.key === 'Enter' || event.keyCode === 13) sendGroupMessageDirectlyWithoutLimit()" placeholder="تحدث مع زملائك..." class="flex-1 bg-slate-50 dark:bg-slate-800 text-sm px-4 py-2.5 rounded-full outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-emerald-500 text-slate-800 dark:text-white">
+                            <button type="button" onclick="sendGroupMessageDirectlyWithoutLimit()" class="w-10 h-10 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center transition-colors shadow-md shrink-0"><i class="fa-solid fa-paper-plane"></i></button>
                         </div>
                     `;
                 } else if (remainingInSession === 0) {
@@ -6886,8 +6886,8 @@ window.addEventListener('appinstalled', () => {
                         <span>🏦 الرصيد الإجمالي: ${totalBankMsgs}</span>
                     </div>
                     <div class="p-3 flex gap-2 items-center">
-                        <input type="text" id="chat-input-msg" onkeypress="if(event.key === 'Enter') sendGroupMessage()" placeholder="اكتب رسالة سريعة..." class="flex-1 bg-slate-50 dark:bg-slate-800 text-sm px-4 py-2.5 rounded-full outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-indigo-500 text-slate-800 dark:text-white">
-                        <button onclick="sendGroupMessage()" class="w-10 h-10 rounded-full ${activeColor} text-white flex items-center justify-center transition-colors shadow-md shrink-0"><i class="fa-solid fa-paper-plane"></i></button>
+                        <input type="text" id="chat-input-msg" onkeydown="if(event.key === 'Enter' || event.keyCode === 13) sendGroupMessage()" placeholder="اكتب رسالة سريعة..." class="flex-1 bg-slate-50 dark:bg-slate-800 text-sm px-4 py-2.5 rounded-full outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-indigo-500 text-slate-800 dark:text-white">
+                        <button type="button" onclick="sendGroupMessage()" class="w-10 h-10 rounded-full ${activeColor} text-white flex items-center justify-center transition-colors shadow-md shrink-0"><i class="fa-solid fa-paper-plane"></i></button>
                     </div>
                 `;
             } else if (remainingInSession === 0) {
@@ -6896,40 +6896,43 @@ window.addEventListener('appinstalled', () => {
                 chatContainer.innerHTML = `<div class="p-3 text-center text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800">رصيدك 0. أضف مهامك وأنجزها لتربح رسائل للجلسة القادمة.</div>`;
             }
 
-            // لوحة المهام
+            // لوحة المهام (محسّنة للموبايل بشكل كامل)
             let tasksHtml = '';
             if (tasks.length === 0) {
-                tasksHtml = `<p class="text-[10px] text-slate-400 text-center py-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl">لم تضف مهام بعد. أضف مهامك لبدء التركيز 🎯</p>`;
+                tasksHtml = `
+                <div class="text-center py-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                    <p class="text-xs font-bold text-indigo-500 mb-1">أضف مهمتك الأولى للبدء 🎯</p>
+                    <p class="text-[10px] text-slate-400">مثال: قراءة صفحة 10، حل تمرين...</p>
+                </div>`;
             } else {
                 tasks.forEach(task => {
                     tasksHtml += `
-                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 text-xs transition-all">
-                            <div class="flex items-center gap-2 flex-1 min-w-0">
-                                <input type="checkbox" onchange="toggleGroupStudyTask('${task.id}')" ${task.completed ? 'checked' : ''} class="w-4 h-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-500 accent-indigo-500 cursor-pointer shrink-0">
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 text-sm transition-all mb-2">
+                            <label class="flex items-center gap-3 flex-1 min-w-0 cursor-pointer select-none">
+                                <input type="checkbox" onchange="toggleGroupStudyTask('${task.id}')" ${task.completed ? 'checked' : ''} class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600 cursor-pointer shrink-0">
                                 <span class="font-bold text-slate-700 dark:text-slate-300 truncate ${task.completed ? 'line-through opacity-50' : ''}">${task.text}</span>
-                            </div>
-                            <button onclick="deleteGroupStudyTask('${task.id}')" class="text-rose-400 hover:text-rose-600 p-1.5 shrink-0"><i class="fa-solid fa-trash text-sm"></i></button>
+                            </label>
+                            <button type="button" onclick="deleteGroupStudyTask('${task.id}')" class="text-rose-400 hover:text-rose-600 bg-white dark:bg-slate-900 p-2 rounded-lg shadow-sm shrink-0 ml-2"><i class="fa-solid fa-trash text-xs"></i></button>
                         </div>
                     `;
                 });
             }
 
             tasksContainer.innerHTML = `
-                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col gap-3">
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-sm flex flex-col gap-4">
                     <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
-                        <h5 class="font-bold text-xs text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                        <h5 class="font-bold text-sm text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
                             <i class="fa-solid fa-list-check"></i> مهام الجلسة النشطة
                         </h5>
-                        <span class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-bold">${completedTasks}/${totalTasks}</span>
+                        <span class="text-xs bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 px-2 py-1 rounded font-bold">${completedTasks}/${totalTasks}</span>
                     </div>
-                    <p class="text-[9px] text-slate-400 leading-relaxed">أنجز جميع مهامك قبل انتهاء المؤقت لتكسب 5 رسائل للجلسة القادمة.</p>
                     
-                    <div class="flex flex-col gap-1.5 max-h-48 overflow-y-auto custom-scrollbar pr-1">${tasksHtml}</div>
+                    <div class="flex flex-col max-h-52 overflow-y-auto custom-scrollbar pr-1">${tasksHtml}</div>
                     
-                    <div class="flex flex-col gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 mt-1">
+                    <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
                         <div class="flex gap-2">
-                            <input type="text" id="group-study-task-input" onkeypress="if(event.key === 'Enter') addGroupStudyTask()" placeholder="أضف مهمة..." class="flex-1 text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white rounded-xl px-3 py-2 outline-none border border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-indigo-500">
-                            <button onclick="addGroupStudyTask()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-sm shrink-0"><i class="fa-solid fa-plus"></i></button>
+                            <input type="text" id="group-study-task-input" onkeydown="if(event.key === 'Enter' || event.keyCode === 13) addGroupStudyTask()" placeholder="أضف مهمتك هنا..." class="flex-1 text-sm bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white rounded-xl px-4 py-3 outline-none border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 shadow-inner">
+                            <button type="button" onclick="addGroupStudyTask()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all shadow-md shrink-0 active:scale-95"><i class="fa-solid fa-plus"></i></button>
                         </div>
                     </div>
                 </div>
