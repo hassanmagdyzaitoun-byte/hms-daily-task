@@ -2403,9 +2403,13 @@
                 const tab = btn.dataset.tab;
 
                 // جديد: التحقق إذا كان التبويب هو المذاكرة الجماعية والمستخدم لم يكمل ملفه الشخصي بعد
-                if (tab === 'groups') {
-                    checkGroupProfileAccess();
+            if (tab === 'groups') {
+                checkGroupProfileAccess();
+                // تحديث المجموعات تلقائياً بمجرد فتح التبويب إذا كان المستخدم قد حدد قسمه
+                if (userGender && currentUser) {
+                    loadPublicGroups();
                 }
+            }
                 
                 document.querySelectorAll('.nav-btn').forEach(b => {
                     b.classList.remove('active', 'text-brand-700', 'bg-brand-50', 'dark:text-brand-300', 'dark:bg-brand-950/30', 'font-bold');
@@ -6172,11 +6176,7 @@ window.addEventListener('appinstalled', () => {
 
         function createNewStudyGroup() {
             if (!currentUser) {
-                alert("⚠️ نظام حماية متصفح الهاتف يمنع الاتصال بقاعدة البيانات من الملفات المحلية. يرجى رفع التطبيق على رابط إنترنت حقيقي (HTTPS) ليعمل مسار المذاكرة الجماعية بشكل سليم.");
-                return;
-            }
-            if (!userGender) {
-                alert("يرجى إعداد ملفك الشخصي واختيار القسم (ذكر/أنثى) أولاً.");
+                alert("⚠️ جاري الاتصال بسيرفر المجموعات، يرجى الانتظار ثواني والمحاولة مرة أخرى. إذا استمرت المشكلة، تأكد من اتصالك بالإنترنت.");
                 return;
             }
 
@@ -6208,8 +6208,12 @@ window.addEventListener('appinstalled', () => {
             const container = document.getElementById('public-groups-container');
             if(!container || !userGender) return;
 
-            // السيرفر سيعطيه فقط مجموعات قسمه بفضل الـ Rules
-            db.ref(`groups/${userGender}`).on('value', (snapshot) => {
+            const groupsRef = db.ref(`groups/${userGender}`);
+            
+            // 1. إيقاف أي مستمعات سابقة لمنع تكرار البيانات وتداخلها عند التنقل بين الصفحات
+            groupsRef.off();
+
+            groupsRef.on('value', (snapshot) => {
                 container.innerHTML = '';
                 const groups = snapshot.val();
                 
@@ -6218,16 +6222,25 @@ window.addEventListener('appinstalled', () => {
                     return;
                 }
 
+                let hasVisibleGroups = false;
+
                 Object.keys(groups).forEach(groupId => {
                     const group = groups[groupId];
                     
-                    // ⏱️ فحص التدمير الذاتي: إذا مر على إنشاء المجموعة أكثر من 7 ساعات (25,200,000 مللي ثانية)
-                    const ageInMs = Date.now() - group.info.createdAt;
-                    if (ageInMs > 25200000) {
-                        db.ref(`groups/${userGender}/${groupId}`).remove(); // حذفها نهائياً من السيرفر
-                        return; // تخطي عرضها في القائمة
+                    // 2. حماية قوية: التأكد من أن بيانات المجموعة اكتملت رفعها للسيرفر ولا يوجد بها نقص
+                    if (!group || !group.info || !group.info.name) return;
+
+                    // 3. فحص التدمير الذاتي (7 ساعات) بطريقة آمنة لا تسبب توقف الكود
+                    if (typeof group.info.createdAt === 'number') {
+                        const ageInMs = Date.now() - group.info.createdAt;
+                        if (ageInMs > 25200000) {
+                            // محاولة حذفها من السيرفر وتخطي عرضها
+                            db.ref(`groups/${userGender}/${groupId}`).remove().catch(() => {});
+                            return; 
+                        }
                     }
 
+                    hasVisibleGroups = true;
                     const memCount = group.members ? Object.keys(group.members).length : 0;
                     const iconColor = userGender === 'male' ? 'text-blue-600 bg-blue-100 dark:bg-blue-900/30' : 'text-rose-600 bg-rose-100 dark:bg-rose-900/30';
                     const btnColor = userGender === 'male' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-rose-500 hover:bg-rose-600';
@@ -6245,8 +6258,15 @@ window.addEventListener('appinstalled', () => {
                         </div>
                     `;
                 });
+
+                // إذا كانت كل المجموعات الموجودة قد انتهت صلاحيتها ولم يتم رسم أي مجموعة
+                if (!hasVisibleGroups) {
+                    container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl col-span-full">لا توجد مجموعات نشطة حالياً. أنشئ مجموعة جديدة!</p>';
+                }
+
             }, (error) => {
-                console.error("فشل جلب الغرف (تم الرفض بواسطة السيرفر):", error);
+                console.error("فشل جلب الغرف:", error);
+                container.innerHTML = '<p class="text-xs text-rose-500 text-center py-4 col-span-full">حدث خطأ في الاتصال. تأكد من الإنترنت.</p>';
             });
         }
 
